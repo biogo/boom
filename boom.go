@@ -22,10 +22,12 @@ package boom
 #cgo CFLAGS: -g -O2 -fPIC -m64 -pthread
 #cgo LDFLAGS: -lz
 #include "sam.h"
+#include "bam_endian.h"
 */
 import "C"
 
 import (
+	"encoding/binary"
 	"fmt"
 	"io"
 	"reflect"
@@ -52,6 +54,11 @@ var (
 	notBamFile       = fmt.Errorf("boom: not bam file")
 	couldNotAllocate = fmt.Errorf("boom: could not allocate")
 	cannotAddr       = fmt.Errorf("boom: cannot address value")
+	bamIsBigEndian   = C.bam_is_big_endian() == 1
+	endian           = [2]binary.ByteOrder{
+		binary.LittleEndian,
+		binary.BigEndian,
+	}[C.bam_is_big_endian()]
 )
 
 type bamRecord struct {
