@@ -15,6 +15,6 @@ func main() {
 		if err != nil {
 			break
 		}
-		fmt.Println(r.Start(), r.End(), r.Len(), r.Strand(), r.Quality(), r.Flags())
+		fmt.Printf("%s %d %d %d %d %d %x, %q\n", r.ID(), r.Start(), r.End(), r.Len(), r.Strand(), r.Quality(), r.Flags(), r.Aux())
 	}
 }

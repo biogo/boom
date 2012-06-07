@@ -11,10 +11,10 @@ func main() {
 		panic(err)
 	}
 	for {
-		r, n, err := bf.Read()
+		r, _, err := bf.Read()
 		if err != nil {
 			break
 		}
-		fmt.Println(n, r.Start(), r.End(), r.Len(), r.Quality(), r.Flags())
+		fmt.Printf("%s %d %d %d %d %d %x, %q\n", r.ID(), r.Start(), r.End(), r.Len(), r.Strand(), r.Quality(), r.Flags(), r.Aux())
 	}
 }
