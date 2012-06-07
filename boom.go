@@ -33,6 +33,20 @@ import (
 	"unsafe"
 )
 
+const (
+	Paired       = C.BAM_FPAIRED      // The read is paired in sequencing, no matter whether it is mapped in a pair.
+	ProperPair   = C.BAM_FPROPER_PAIR // The read is mapped in a proper pair.
+	Unmapped     = C.BAM_FUNMAP       // The read itself is unmapped; conflictive with BAM_FPROPER_PAIR.
+	MateUnmapped = C.BAM_FMUNMAP      // The mate is unmapped.
+	Reverse      = C.BAM_FREVERSE     // The read is mapped to the reverse strand.
+	MateReverse  = C.BAM_FMREVERSE    // The mate is mapped to the reverse strand.
+	Read1        = C.BAM_FREAD1       // This is read1.
+	Read2        = C.BAM_FREAD2       // This is read2.
+	Secondary    = C.BAM_FSECONDARY   // Not primary alignment.
+	QCFail       = C.BAM_FQCFAIL      // QC failure.
+	Duplicate    = C.BAM_FDUP         // Optical or PCR duplicate.
+)
+
 var (
 	valueIsNil       = fmt.Errorf("boom: value is nil")
 	notBamFile       = fmt.Errorf("boom: not bam file")

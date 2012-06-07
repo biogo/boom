@@ -40,3 +40,10 @@ func (self *Record) Quality() byte {
 func (self *Record) Flags() uint {
 	return self.flag()
 }
+
+func (self *Record) Strand() int8 {
+	if self.Flags()&Reverse == Reverse {
+		return -1
+	}
+	return 1
+}
