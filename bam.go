@@ -51,7 +51,7 @@ func (self *BAMFile) Close() error {
 
 func (self *BAMFile) Read() (r *Record, n int, err error) {
 	n, br, err := self.samRead()
-	r = &Record{br}
+	r = &Record{bamRecord: br}
 	return
 }
 

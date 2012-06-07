@@ -50,7 +50,7 @@ func (self *SAMFile) Close() error {
 
 func (self *SAMFile) Read() (r *Record, n int, err error) {
 	n, br, err := self.samRead()
-	r = &Record{br}
+	r = &Record{bamRecord: br}
 	return
 }
 

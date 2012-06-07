@@ -15,10 +15,24 @@
 
 package boom
 
-import ()
-
 type Record struct {
 	*bamRecord
+	filled   bool
+	cigarStr string
+	nameStr  string
+	seqStr   string
+	qualStr  string
+	auxStr   string
+}
+
+func (self *Record) ID() string {
+	self.fillData()
+	return self.nameStr
+}
+
+func (self *Record) Aux() string {
+	self.fillData()
+	return self.auxStr
 }
 
 func (self *Record) Start() int {
@@ -46,4 +60,21 @@ func (self *Record) Strand() int8 {
 		return -1
 	}
 	return 1
+}
+
+func (self *Record) fillData() (n int) {
+	if self.filled {
+		return
+	}
+
+	d := self.dataUnsafe()
+	var s, e int
+
+	s, e = 0, int(self.lQname())
+	self.nameStr = string(d[s : e-1])
+	self.auxStr = string(d[len(d)-int(self.lAux()):])
+	// TODO: Not clear how CIGAR, seq and qual are encoded.
+
+	self.filled = true
+	return
 }
