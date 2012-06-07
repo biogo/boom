@@ -149,11 +149,25 @@ func (br *bamRecord) dataCap() int {
 	}
 	panic(valueIsNil)
 }
-func (br *bamRecord) data() uintptr {
+func (br *bamRecord) dataPtr() uintptr {
 	if br.b != nil {
 		return uintptr(unsafe.Pointer(br.b.data))
 	}
 	panic(valueIsNil)
+}
+func (br *bamRecord) dataUnsafe() []byte {
+	if br.b == nil {
+		panic(valueIsNil)
+	}
+
+	l := int(br.b.data_len)
+	var data []byte
+	sliceHeader := (*reflect.SliceHeader)((unsafe.Pointer(&data)))
+	sliceHeader.Cap = l
+	sliceHeader.Len = l
+	sliceHeader.Data = uintptr(unsafe.Pointer(br.b.data))
+
+	return data
 }
 func (br *bamRecord) bamRecordFree() {
 	if br.b != nil {
