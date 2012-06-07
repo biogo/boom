@@ -211,9 +211,7 @@ func (sf *samFile) samRead() (n int, br *bamRecord, err error) {
 		return 0, nil, couldNotAllocate
 	}
 	*b = C.bam1_t{}
-	br = &bamRecord{
-		b: b,
-	}
+	br = newBamRecord(b)
 
 	cn, err := C.samread(
 		(*C.samfile_t)(unsafe.Pointer(sf.fp)),
