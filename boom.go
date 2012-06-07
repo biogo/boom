@@ -27,6 +27,7 @@ import "C"
 
 import (
 	"fmt"
+	"io"
 	"reflect"
 	"runtime"
 	"unsafe"
@@ -205,19 +206,25 @@ func (sf *samFile) samRead() (n int, br *bamRecord, err error) {
 	}
 
 	b := (*C.bam1_t)(unsafe.Pointer(C.malloc((C.size_t)(unsafe.Sizeof(C.bam1_t{})))))
+
 	if b == nil {
 		return 0, nil, couldNotAllocate
 	}
+	*b = C.bam1_t{}
 	br = &bamRecord{
 		b: b,
 	}
 
-	n = int(C.samread(
+	cn, err := C.samread(
 		(*C.samfile_t)(unsafe.Pointer(sf.fp)),
 		(*C.bam1_t)(unsafe.Pointer(br.b)),
-	))
+	)
+	n = int(cn)
+	if n < 0 {
+		err = io.EOF
+	}
 
-	return n, br, nil
+	return
 }
 
 func (sf *samFile) samWrite(br *bamRecord) (n int, err error) {
