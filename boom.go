@@ -204,6 +204,9 @@ func samOpen(filename, mode string, aux header) (sf *samFile, err error) {
 	case *bamHeader:
 		auxAddr = reflect.ValueOf(aux).UnsafeAddr()
 	default:
+		if aux == nil {
+			break
+		}
 		panic(fmt.Sprintf("boom: wrong type %T", aux))
 	}
 
