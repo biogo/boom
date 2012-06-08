@@ -34,6 +34,11 @@ type Record struct {
 	auxTags    []Aux
 }
 
+func (self *Record) ReferenceID() int {
+	self.fillData()
+	return int(self.tid())
+}
+
 func (self *Record) Name() string {
 	self.fillData()
 	return self.nameStr

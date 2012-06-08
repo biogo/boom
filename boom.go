@@ -169,7 +169,7 @@ func (br *bamRecord) dataUnsafe() []byte {
 
 	l := int(br.b.data_len)
 	var data []byte
-	sliceHeader := (*reflect.SliceHeader)((unsafe.Pointer(&data)))
+	sliceHeader := (*reflect.SliceHeader)(unsafe.Pointer(&data))
 	sliceHeader.Cap = l
 	sliceHeader.Len = l
 	sliceHeader.Data = uintptr(unsafe.Pointer(br.b.data))
@@ -226,6 +226,10 @@ func samOpen(filename, mode string, aux header) (sf *samFile, err error) {
 	runtime.SetFinalizer(sf, (*samFile).samClose)
 
 	return
+}
+
+func (sf *samFile) header() *bamHeader {
+	return &bamHeader{bh: sf.fp.header}
 }
 
 func (sf *samFile) samClose() error {
@@ -353,6 +357,58 @@ type header interface {
 
 type bamHeader struct {
 	bh *C.bam_header_t
+}
+
+func (bh *bamHeader) bamGetTid(name string) (int, error) {
+	sn := C.CString(name)
+	defer C.free(unsafe.Pointer(sn))
+
+	tid, err := C.bam_get_tid(
+		(*C.bam_header_t)(unsafe.Pointer(bh.bh)),
+		(*C.char)(unsafe.Pointer(sn)),
+	)
+
+	return int(tid), err
+}
+
+func (bh *bamHeader) nTargets() int32 {
+	if bh.bh != nil {
+		return int32(bh.bh.n_targets)
+	}
+	panic(valueIsNil)
+}
+
+func (bh *bamHeader) targetNames() (n []string) {
+	if bh.bh != nil {
+		n = make([]string, bh.bh.n_targets)
+		l := int(bh.bh.n_targets)
+		var nPtrs []*C.char
+		sliceHeader := (*reflect.SliceHeader)(unsafe.Pointer(&nPtrs))
+		sliceHeader.Cap = l
+		sliceHeader.Len = l
+		sliceHeader.Data = uintptr(unsafe.Pointer(bh.bh.target_name))
+
+		for i, p := range nPtrs {
+			n[i] = C.GoString(p)
+		}
+
+		return
+	}
+	panic(valueIsNil)
+}
+
+func (bh *bamHeader) targetLengths() []uint32 {
+	if bh.bh != nil {
+		l := int(bh.bh.n_targets)
+		var unsafeLengths []uint32
+		sliceHeader := (*reflect.SliceHeader)(unsafe.Pointer(&unsafeLengths))
+		sliceHeader.Cap = l
+		sliceHeader.Len = l
+		sliceHeader.Data = uintptr(unsafe.Pointer(bh.bh.target_name))
+
+		return append([]uint32(nil), unsafeLengths...)
+	}
+	panic(valueIsNil)
 }
 
 func (bh *bamHeader) header() {}

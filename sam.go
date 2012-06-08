@@ -57,3 +57,11 @@ func (self *SAMFile) Read() (r *Record, n int, err error) {
 func (self *SAMFile) Write(r *Record) (n int, err error) {
 	return self.samWrite(r.bamRecord)
 }
+
+func (self *SAMFile) ReferenceNames() []string {
+	return self.header().targetNames()
+}
+
+func (self *SAMFile) ReferenceLengths() []uint32 {
+	return self.header().targetLengths()
+}

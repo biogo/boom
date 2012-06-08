@@ -58,3 +58,11 @@ func (self *BAMFile) Read() (r *Record, n int, err error) {
 func (self *BAMFile) Write(r *Record) (n int, err error) {
 	return self.samWrite(r.bamRecord)
 }
+
+func (self *BAMFile) ReferenceNames() []string {
+	return self.header().targetNames()
+}
+
+func (self *BAMFile) ReferenceLengths() []uint32 {
+	return self.header().targetLengths()
+}
