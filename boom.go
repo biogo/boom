@@ -383,10 +383,10 @@ func (bh *bamHeader) targetNames() (n []string) {
 		n = make([]string, bh.bh.n_targets)
 		l := int(bh.bh.n_targets)
 		var nPtrs []*C.char
-		sliceHeader := (*reflect.SliceHeader)(unsafe.Pointer(&nPtrs))
-		sliceHeader.Cap = l
-		sliceHeader.Len = l
-		sliceHeader.Data = uintptr(unsafe.Pointer(bh.bh.target_name))
+		sh := (*reflect.SliceHeader)(unsafe.Pointer(&nPtrs))
+		sh.Cap = l
+		sh.Len = l
+		sh.Data = uintptr(unsafe.Pointer(bh.bh.target_name))
 
 		for i, p := range nPtrs {
 			n[i] = C.GoString(p)
@@ -401,10 +401,10 @@ func (bh *bamHeader) targetLengths() []uint32 {
 	if bh.bh != nil {
 		l := int(bh.bh.n_targets)
 		var unsafeLengths []uint32
-		sliceHeader := (*reflect.SliceHeader)(unsafe.Pointer(&unsafeLengths))
-		sliceHeader.Cap = l
-		sliceHeader.Len = l
-		sliceHeader.Data = uintptr(unsafe.Pointer(bh.bh.target_name))
+		sh := (*reflect.SliceHeader)(unsafe.Pointer(&unsafeLengths))
+		sh.Cap = l
+		sh.Len = l
+		sh.Data = uintptr(unsafe.Pointer(bh.bh.target_len))
 
 		return append([]uint32(nil), unsafeLengths...)
 	}
