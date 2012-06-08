@@ -138,16 +138,10 @@ func (self *Record) fillData() (n int) {
 	// Get CIGAR data.
 	nCigar := self.nCigar()
 	s, e = e, e+int(nCigar<<2) // CIGAR represented as C.uint32 so length is 4*n_cigar
-	cigarCodes := make([]uint32, nCigar)
-	err := binary.Read(bytes.NewBuffer(d[s:e]), endian, &cigarCodes)
+	self.cigar = make([]CigarOp, nCigar)
+	err := binary.Read(bytes.NewBuffer(d[s:e]), endian, &self.cigar)
 	if err != nil {
 		panic(fmt.Sprintf("boom: binary.Read failed: %v", err))
-	}
-	for _, c := range cigarCodes {
-		self.cigar = append(self.cigar, CigarOp{
-			op:     CigarOpType(c & 0xf),
-			length: c >> 4,
-		})
 	}
 
 	// Get sequence data.
@@ -181,6 +175,13 @@ func (self *Record) fillData() (n int) {
 	return
 }
 
+// Compact Idiosyncratic Gapped Alignment Report
+type CigarOp uint32
+
+func (co CigarOp) Type() CigarOpType { return CigarOpType(co & 0xf) }
+func (co CigarOp) Len() int          { return int(co >> 4) }
+func (co CigarOp) String() string    { return fmt.Sprintf("%d%s", co.Len(), co.Type().String()) }
+
 type CigarOpType byte
 
 const (
@@ -203,16 +204,6 @@ func (ct CigarOpType) String() string {
 		ct = lastCigar
 	}
 	return cigarOps[ct]
-}
-
-// Compact Idiosyncratic Gapped Alignment Report
-type CigarOp struct {
-	op     CigarOpType
-	length uint32
-}
-
-func (co CigarOp) String() string {
-	return fmt.Sprintf("%d%s", co.length, co.op.String())
 }
 
 type Aux []byte
