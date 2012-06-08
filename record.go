@@ -90,7 +90,7 @@ func (self *Record) Score() byte {
 	return self.qual()
 }
 
-func (self *Record) Flags() uint {
+func (self *Record) Flags() Flags {
 	return self.flag()
 }
 

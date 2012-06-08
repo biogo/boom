@@ -102,9 +102,9 @@ func (br *bamRecord) lQname() byte {
 	}
 	panic(valueIsNil)
 }
-func (br *bamRecord) flag() uint {
+func (br *bamRecord) flag() Flags {
 	if br.b != nil {
-		return uint(br.b.core.flag)
+		return Flags(br.b.core.flag)
 	}
 	panic(valueIsNil)
 }
@@ -416,3 +416,31 @@ func (bh *bamHeader) header() {}
 type textHeader []byte
 
 func (th textHeader) header() {}
+
+type Flags uint32
+
+// String representation of BAM alignment flags:
+//  0x001	p	the read is paired in sequencing
+//  0x002	P	the read is mapped in a proper pair
+//  0x004	u	the query sequence itself is unmapped
+//  0x008	U	the mate is unmapped
+//  0x010	r	strand of the query
+//  0x020	R	strand of the mate
+//  0x040	1	the read is the first read in a pair
+//  0x080	2	the read is the second read in a pair
+//  0x100	s	the alignment is not primary
+//  0x200	f	the read fails platform/vendor quality checks
+//  0x400	d	the read is either a PCR or an optical duplicate
+func (f Flags) String() string {
+	const flags = "DqSLFrRuUAM"
+	b := make([]byte, len(flags))
+	for i, c := range flags {
+		if f&(1<<uint(10-i)) != 0 {
+			b[i] = byte(c)
+		} else {
+			b[i] = '-'
+		}
+	}
+
+	return string(b)
+}
