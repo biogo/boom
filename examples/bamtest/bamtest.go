@@ -10,7 +10,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("%s %d\n%s", sf.ReferenceNames(), sf.ReferenceLengths(), sf.Text())
+	fmt.Printf("%s %d\n%s", bf.ReferenceNames(), bf.ReferenceLengths(), bf.Text())
 	for {
 		r, _, err := bf.Read()
 		if err != nil {
