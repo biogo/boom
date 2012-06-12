@@ -415,17 +415,17 @@ const (
 	Secondary    Flags = secondary    // Not primary alignment.
 	QCFail       Flags = qCFail       // QC failure.
 	Duplicate    Flags = duplicate    // Optical or PCR duplicate.
-	paired       = C.BAM_FPAIRED
-	properPair   = C.BAM_FPROPER_PAIR
-	unmapped     = C.BAM_FUNMAP
-	mateUnmapped = C.BAM_FMUNMAP
-	reverse      = C.BAM_FREVERSE
-	mateReverse  = C.BAM_FMREVERSE
-	read1        = C.BAM_FREAD1
-	read2        = C.BAM_FREAD2
-	secondary    = C.BAM_FSECONDARY
-	qCFail       = C.BAM_FQCFAIL
-	duplicate    = C.BAM_FDUP
+	paired             = C.BAM_FPAIRED
+	properPair         = C.BAM_FPROPER_PAIR
+	unmapped           = C.BAM_FUNMAP
+	mateUnmapped       = C.BAM_FMUNMAP
+	reverse            = C.BAM_FREVERSE
+	mateReverse        = C.BAM_FMREVERSE
+	read1              = C.BAM_FREAD1
+	read2              = C.BAM_FREAD2
+	secondary          = C.BAM_FSECONDARY
+	qCFail             = C.BAM_FQCFAIL
+	duplicate          = C.BAM_FDUP
 )
 
 type Flags uint32
