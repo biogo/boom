@@ -164,6 +164,9 @@ func (br *bamRecord) dataUnsafe() []byte {
 }
 func (br *bamRecord) bamRecordFree() {
 	if br.b != nil {
+		if br.b.data != nil {
+			C.free(unsafe.Pointer(br.b.data))
+		}
 		C.free(unsafe.Pointer(br.b))
 		br.b = nil
 	}
