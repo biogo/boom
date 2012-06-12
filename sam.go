@@ -65,3 +65,7 @@ func (self *SAMFile) ReferenceNames() []string {
 func (self *SAMFile) ReferenceLengths() []uint32 {
 	return self.header().targetLengths()
 }
+
+func (self *SAMFile) Text() string {
+	return self.header().text()
+}

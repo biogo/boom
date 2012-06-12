@@ -66,3 +66,7 @@ func (self *BAMFile) ReferenceNames() []string {
 func (self *BAMFile) ReferenceLengths() []uint32 {
 	return self.header().targetLengths()
 }
+
+func (self *BAMFile) Text() string {
+	return self.header().text()
+}

@@ -397,6 +397,13 @@ func (bh *bamHeader) targetLengths() []uint32 {
 	panic(valueIsNil)
 }
 
+func (bh *bamHeader) text() (t string) {
+	if bh.bh != nil {
+		return C.GoStringN(bh.bh.text, C.int(bh.bh.l_text))
+	}
+	panic(valueIsNil)
+}
+
 func (bh *bamHeader) header() {}
 
 type textHeader []byte
