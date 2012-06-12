@@ -186,14 +186,14 @@ type CigarOpType byte
 
 const (
 	CigarMatch CigarOpType = iota
-	CigarInsert
+	CigarInsertion
 	CigarDeletion
-	CigarSkipReference
-	CigarSoftClip
-	CigarHardClip
-	CigarPad
+	CigarSkipped
+	CigarSoftClipped
+	CigarHardClipped
+	CigarPadded
 	CigarEqual
-	CigarDifferent
+	CigarMismatch
 	lastCigar
 )
 
