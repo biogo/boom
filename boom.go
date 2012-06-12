@@ -449,11 +449,20 @@ type Flags uint32
 //  0x100 - s - Secondary
 //  0x200 - f - QCFail
 //  0x400 - d - Duplicate
+//
+// Note that flag bits are represented high order to the right.
 func (f Flags) String() string {
-	const flags = "DqSLFrRuUAM"
+	// If 0x01 is unset, no assumptions can be made about 0x02, 0x08, 0x20, 0x40 and 0x80
+	const pairedMask = ProperPair | MateUnmapped | MateReverse | MateReverse | Read1 | Read2
+	if f&1 == 0 {
+		f &^= pairedMask
+	}
+
+	const flags = "pPuUrR12sfd"
+
 	b := make([]byte, len(flags))
 	for i, c := range flags {
-		if f&(1<<uint(10-i)) != 0 {
+		if f&(1<<uint(i)) != 0 {
 			b[i] = byte(c)
 		} else {
 			b[i] = '-'
