@@ -6,6 +6,7 @@ import (
 )
 
 func main() {
+	boom.Verbosity(0)
 	sf, err := boom.OpenSAM("test.sam", "")
 	if err != nil {
 		panic(err)

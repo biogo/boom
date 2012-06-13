@@ -47,6 +47,13 @@ var (
 	}[C.bam_is_big_endian()]
 )
 
+func Verbosity(v int) int {
+	if 0 <= v && v <= 3 {
+		C.bam_verbose = C.int(v)
+	}
+	return int(C.bam_verbose)
+}
+
 type bamRecord struct {
 	b *C.bam1_t
 }

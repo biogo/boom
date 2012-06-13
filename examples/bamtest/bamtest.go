@@ -6,6 +6,7 @@ import (
 )
 
 func main() {
+	boom.Verbosity(0)
 	bf, err := boom.OpenBAM("test.bam")
 	if err != nil {
 		panic(err)
