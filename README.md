@@ -1,4 +1,6 @@
 boom
 ====
 
-samtools wrapper for Go
+samtools bindings for Go
+
+go get install code.google.com/p/biogo.boom

@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/kortschak/boom"
+	"code.google.com/p/biogo.boom"
 )
 
 func main() {
