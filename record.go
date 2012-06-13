@@ -123,8 +123,8 @@ var (
 	}
 )
 
-func (self *Record) fillData() (n int) {
-	if self.filled {
+func (self *Record) fillData() {
+	if self.filled || self.bamRecord.b == nil {
 		return
 	}
 
@@ -172,7 +172,6 @@ func (self *Record) fillData() (n int) {
 	self.auxTags = parseAux(self.auxBytes)
 
 	self.filled = true
-	return
 }
 
 // Compact Idiosyncratic Gapped Alignment Report
