@@ -347,6 +347,30 @@ func (sf *samFile) bamFetch(bi *bamIndex, tid, beg, end int, data interface{}, f
 	return int(r), nil
 }
 
+type bamFetchCFn func(*C.bam1_t, unsafe.Pointer) C.int
+
+func (sf *samFile) bamFetchC(bi *bamIndex, tid, beg, end int, data unsafe.Pointer, fn bamFetchCFn) (ret int, err error) {
+	if sf.fp == nil || bi.idx == nil {
+		return 0, valueIsNil
+	}
+
+	if sf.fileType()&1 != 1 {
+		return 0, notBamFile
+	}
+
+	r := C.bam_fetch(
+		(*C.BGZF)(unsafe.Pointer(sf.fp)),
+		bi.idx,
+		C.int(tid),
+		C.int(beg),
+		C.int(end),
+		data,
+		(*[0]byte)(unsafe.Pointer(&fn)),
+	)
+
+	return int(r), nil
+}
+
 type header interface {
 	header()
 }
