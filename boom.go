@@ -183,13 +183,6 @@ type samFile struct {
 	fp *C.samfile_t
 }
 
-func (sf *samFile) fileType() int {
-	if sf.fp != nil {
-		return int(sf.fp._type)
-	}
-	panic(valueIsNil)
-}
-
 func samOpen(filename, mode string, aux header) (sf *samFile, err error) {
 	fn, m := C.CString(filename), C.CString(mode)
 	defer C.free(unsafe.Pointer(fn))
@@ -222,6 +215,24 @@ func samOpen(filename, mode string, aux header) (sf *samFile, err error) {
 	runtime.SetFinalizer(sf, (*samFile).samClose)
 
 	return
+}
+
+type bamTypeFlags int
+
+const (
+	// TODO: Curent definitions are a bit haphazard due to the underlying libbam defs. When tests exist, use 1<<iota.
+	bamFile  bamTypeFlags = iota + 1         // File is a BAM file. Defined in sam.c TYPE_BAM
+	readFile                                 // File is opened for reading. Defined in sam.c TYPE_READ
+	hexFlags bamTypeFlags = C.BAM_OFHEX << 2 // Flags are in string format.
+	strFlags bamTypeFlags = C.BAM_OFSTR << 2 // Flags are in hex format.
+)
+
+// fileType returns the type of file wrapped by the samFile struct.
+func (sf *samFile) fileType() bamTypeFlags {
+	if sf.fp != nil {
+		return bamTypeFlags(sf.fp._type)
+	}
+	panic(valueIsNil)
 }
 
 func (sf *samFile) header() *bamHeader {
@@ -321,7 +332,7 @@ func (sf *samFile) bamFetch(bi *bamIndex, tid, beg, end int, data interface{}, f
 		return 0, valueIsNil
 	}
 
-	if sf.fileType()&1 != 1 {
+	if sf.fileType()&bamFile == 0 {
 		return 0, notBamFile
 	}
 
@@ -354,7 +365,7 @@ func (sf *samFile) bamFetchC(bi *bamIndex, tid, beg, end int, data unsafe.Pointe
 		return 0, valueIsNil
 	}
 
-	if sf.fileType()&1 != 1 {
+	if sf.fileType()&bamFile == 0 {
 		return 0, notBamFile
 	}
 
