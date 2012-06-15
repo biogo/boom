@@ -47,6 +47,9 @@ var (
 	}[C.bam_is_big_endian()]
 )
 
+// Verbosity sets and returns the level of debugging information emitted on stderr by libbam.
+// The level of verbosity intrepreted by libbam ranges from 0 to 3 inclusive, with lower values
+// being less verbose. Passing values of v outside this range do not alter verbosity.
 func Verbosity(v int) int {
 	if 0 <= v && v <= 3 {
 		C.bam_verbose = C.int(v)
@@ -54,10 +57,14 @@ func Verbosity(v int) int {
 	return int(C.bam_verbose)
 }
 
+// A bamRecord wraps the bam1_t BAM record.
 type bamRecord struct {
 	b *C.bam1_t
 }
 
+// newBamRecord creates a new bamRecord, setting a finaliser that C.free()s the contained bam1_t.
+// newBamRecord should always be used unless the bamRecord will be explicitly memory managed, or
+// wraps a bam1_t that will be memory managed elsewhere.
 func newBamRecord(b *C.bam1_t) (br *bamRecord) {
 	br = &bamRecord{b}
 	runtime.SetFinalizer(br, (*bamRecord).bamRecordFree)
@@ -65,6 +72,9 @@ func newBamRecord(b *C.bam1_t) (br *bamRecord) {
 	return
 }
 
+// The following methods are helpers to safely return bam1_t field values.
+// All first check that the pointer to the bam1_t is not nil and convert to the appropriate
+// Go type.
 func (br *bamRecord) tid() int32 {
 	if br.b != nil {
 		return int32(br.b.core.tid)
@@ -169,6 +179,8 @@ func (br *bamRecord) dataUnsafe() []byte {
 
 	return data
 }
+
+// bamRecordFree C.free()s the contained bam1_t and its data, first checking for nil pointers.
 func (br *bamRecord) bamRecordFree() {
 	if br.b != nil {
 		if br.b.data != nil {
@@ -179,10 +191,31 @@ func (br *bamRecord) bamRecordFree() {
 	}
 }
 
+// A samFile wraps a samfile_t.
 type samFile struct {
 	fp *C.samfile_t
 }
 
+// samOpen opens a SAM or BAM file with the given filename, mode and optional auxilliary header.
+// According to sam.h:
+//
+// mode matches /[rw](b?)(u?)(h?)([xX]?)/
+//
+//   'r' for reading,
+//   'w' for writing,
+//   'b' for BAM I/O,
+//   'u' for uncompressed BAM output,
+//   'h' for outputing header in SAM,
+//   'x' for HEX flag and
+//   'X' for string flag.
+//
+// If 'b' present, it must immediately follow 'r' or 'w'.
+// Valid modes are "r", "w", "wh", "wx", "whx", "wX", "whX", "rb", "wb" and "wbu" exclusively.
+//
+// If mode[0] == 'w', aux must be a bamHeader.
+// If mode[0] == 'r' && mode != "rb" and @SQ header lines in SAM are absent,
+// aux must contain the name of a file listing of the reference sequences in SAM format.
+// If neither of these conditions is met aux is not used.
 func samOpen(filename, mode string, aux header) (sf *samFile, err error) {
 	fn, m := C.CString(filename), C.CString(mode)
 	defer C.free(unsafe.Pointer(fn))
@@ -238,10 +271,12 @@ func (sf *samFile) fileType() bamTypeFlags {
 	panic(valueIsNil)
 }
 
+// header returns the bamHeader wrapping the bam_header_t associated with sf.fp
 func (sf *samFile) header() *bamHeader {
 	return &bamHeader{bh: sf.fp.header}
 }
 
+// samClose closes the samFile, freeing the C data allocations as part of C.samclose.
 func (sf *samFile) samClose() error {
 	if sf.fp == nil {
 		return valueIsNil
@@ -252,6 +287,8 @@ func (sf *samFile) samClose() error {
 	return nil
 }
 
+// samRead reads and returns the next BAM record returning the number of bytes read,
+// a *bamRecord containing the record data and any error that occurred.
 func (sf *samFile) samRead() (n int, br *bamRecord, err error) {
 	if sf.fp == nil {
 		return 0, nil, valueIsNil
@@ -277,6 +314,8 @@ func (sf *samFile) samRead() (n int, br *bamRecord, err error) {
 	return
 }
 
+// samWrite writes a BAM record represented by br, returning the number of bytes written
+// and any error that occurred.
 func (sf *samFile) samWrite(br *bamRecord) (n int, err error) {
 	if sf.fp == nil || br.b == nil {
 		return 0, valueIsNil
@@ -288,10 +327,13 @@ func (sf *samFile) samWrite(br *bamRecord) (n int, err error) {
 	)), nil
 }
 
+// A bamIndex wraps a bam_index_t.
 type bamIndex struct {
 	idx *C.bam_index_t
 }
 
+// bamIndexBuild builds a BAM index file, filename.bai, from a bam file, filename. It returns an
+// integer value (currently defined as always 0) and any error that occured.
 func bamIndexBuild(filename string) (ret int, err error) {
 	fn := C.CString(filename)
 	defer C.free(unsafe.Pointer(fn))
@@ -303,6 +345,9 @@ func bamIndexBuild(filename string) (ret int, err error) {
 	return int(r), err
 }
 
+// bamIndexLoad loads a BAM index, returning a *bamIndex and any error that occurred.
+// The error should be checked as a non-nil bamIndex is returned independent of error conditions.
+// The bamIndex is created setting a finaliser that C.free()s the contained bam_index_t.
 func bamIndexLoad(filename string) (bi *bamIndex, err error) {
 	fn := C.CString(filename)
 	defer C.free(unsafe.Pointer(fn))
@@ -316,6 +361,7 @@ func bamIndexLoad(filename string) (bi *bamIndex, err error) {
 	return
 }
 
+// bamIndexDestroy C.free()s the contained bam_index_t and its data, first checking for nil pointers.
 func (bi *bamIndex) bamIndexDestroy() (err error) {
 	if bi.idx == nil {
 		return valueIsNil
@@ -328,8 +374,12 @@ func (bi *bamIndex) bamIndexDestroy() (err error) {
 	return
 }
 
+// A BamFetchFn is called on each bamRecord found by bamFetch. The integer return value is ignored
+// internally by bam_fetch, but is specified in the libbam headers.
 type BamFetchFn func(*bamRecord) int
 
+// bamFetch calls fn on all BAM records within the interval [beg, end) of the reference sequence
+// identified by tid. Note that beg >= 0 || beg = 0.
 func (sf *samFile) bamFetch(bi *bamIndex, tid, beg, end int, fn BamFetchFn) (ret int, err error) {
 	if sf.fp == nil || bi.idx == nil {
 		return 0, valueIsNil
@@ -356,8 +406,13 @@ func (sf *samFile) bamFetch(bi *bamIndex, tid, beg, end int, fn BamFetchFn) (ret
 	return int(r), nil
 }
 
+// A bamFetchCFn is called on each bam_1t found by bamFetchC and the unsafe.Pointer is passed as a
+// pointer to a store of user data. The integer return value is ignored internally by bam_fetch,
+// but is specified in the libbam headers.
 type bamFetchCFn func(*C.bam1_t, unsafe.Pointer) C.int
 
+// bamFetchC calls fn on all BAM records within the interval [beg, end) of the reference sequence
+// identified by tid. Note that beg >= 0 || beg = 0. data is passed to fn.
 func (sf *samFile) bamFetchC(bi *bamIndex, tid, beg, end int, data unsafe.Pointer, fn bamFetchCFn) (ret int, err error) {
 	if sf.fp == nil || bi.idx == nil {
 		return 0, valueIsNil
@@ -380,14 +435,17 @@ func (sf *samFile) bamFetchC(bi *bamIndex, tid, beg, end int, data unsafe.Pointe
 	return int(r), nil
 }
 
+// Type header defines types that can be passed to samOpen as a SAM header or header filename.
 type header interface {
-	header()
+	header() // No-op for interface definition.
 }
 
+// A bamHeader wraps a bam_header_t.
 type bamHeader struct {
 	bh *C.bam_header_t
 }
 
+// bamGetTid return the target id for for a reference sequence target matching the string, name.
 func (bh *bamHeader) bamGetTid(name string) (int, error) {
 	sn := C.CString(name)
 	defer C.free(unsafe.Pointer(sn))
@@ -400,6 +458,7 @@ func (bh *bamHeader) bamGetTid(name string) (int, error) {
 	return int(tid), err
 }
 
+// nTargets returns the number of reference sequence targets described in the BAM header.
 func (bh *bamHeader) nTargets() int32 {
 	if bh.bh != nil {
 		return int32(bh.bh.n_targets)
@@ -407,6 +466,8 @@ func (bh *bamHeader) nTargets() int32 {
 	panic(valueIsNil)
 }
 
+// targetNames returns a slice of strings containing the names of the reference sequence
+// targets described in the BAM header.
 func (bh *bamHeader) targetNames() (n []string) {
 	if bh.bh != nil {
 		n = make([]string, bh.bh.n_targets)
@@ -426,6 +487,8 @@ func (bh *bamHeader) targetNames() (n []string) {
 	panic(valueIsNil)
 }
 
+// targetLengths returns a slice of uint32 containing the lengths of the reference sequence
+// targets described in the BAM header.
 func (bh *bamHeader) targetLengths() []uint32 {
 	if bh.bh != nil {
 		l := int(bh.bh.n_targets)
@@ -440,6 +503,7 @@ func (bh *bamHeader) targetLengths() []uint32 {
 	panic(valueIsNil)
 }
 
+// text returns a string containing the full unparsed BAM header.
 func (bh *bamHeader) text() (t string) {
 	if bh.bh != nil {
 		return C.GoStringN(bh.bh.text, C.int(bh.bh.l_text))
@@ -447,14 +511,19 @@ func (bh *bamHeader) text() (t string) {
 	panic(valueIsNil)
 }
 
+// header is a no-op function required to allow *bamHeader to satisfy the header interface.
 func (bh *bamHeader) header() {}
 
+// stringHeader is a string representation of a filename of a SAM header file.
 type stringHeader string
 
+// header is a no-op function required to allow stringHeader to satisfy the header interface.
 func (sh stringHeader) header() {}
 
+// textHeader is a []byte representation of a filename of a SAM header file.
 type textHeader []byte
 
+// header is a no-op function required to allow textHeader to satisfy the header interface.
 func (th textHeader) header() {}
 
 const (
@@ -485,6 +554,7 @@ const (
 	duplicate    = C.BAM_FDUP
 )
 
+// A Flags represents a BAM record's alignment FLAG field.
 type Flags uint32
 
 // String representation of BAM alignment flags:
