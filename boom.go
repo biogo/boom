@@ -325,9 +325,9 @@ func (bi *bamIndex) bamIndexDestroy() (err error) {
 	return
 }
 
-type BamFetchFn func(*bamRecord, interface{}) int
+type BamFetchFn func(*bamRecord) int
 
-func (sf *samFile) bamFetch(bi *bamIndex, tid, beg, end int, data interface{}, fn BamFetchFn) (ret int, err error) {
+func (sf *samFile) bamFetch(bi *bamIndex, tid, beg, end int, fn BamFetchFn) (ret int, err error) {
 	if sf.fp == nil || bi.idx == nil {
 		return 0, valueIsNil
 	}
@@ -336,13 +336,8 @@ func (sf *samFile) bamFetch(bi *bamIndex, tid, beg, end int, data interface{}, f
 		return 0, notBamFile
 	}
 
-	dv := reflect.ValueOf(data)
-	if dv.CanAddr() {
-		return 0, cannotAddr
-	}
-
 	f := func(b *C.bam1_t, _ *[0]byte) C.int {
-		return C.int(fn(&bamRecord{(*C.bam1_t)(unsafe.Pointer(b))}, data))
+		return C.int(fn(&bamRecord{(*C.bam1_t)(unsafe.Pointer(b))}))
 	}
 
 	r := C.bam_fetch(
@@ -351,7 +346,7 @@ func (sf *samFile) bamFetch(bi *bamIndex, tid, beg, end int, data interface{}, f
 		C.int(tid),
 		C.int(beg),
 		C.int(end),
-		unsafe.Pointer(dv.UnsafeAddr()),
+		unsafe.Pointer(nil),
 		(*[0]byte)(unsafe.Pointer(&f)),
 	)
 
