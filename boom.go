@@ -197,6 +197,9 @@ func samOpen(filename, mode string, aux header) (sf *samFile, err error) {
 		} else {
 			auxAddr = 0
 		}
+	case stringHeader:
+		auxAddr := C.CString(string(aux.(stringHeader)))
+		defer C.free(unsafe.Pointer(auxAddr))
 	case *bamHeader:
 		auxAddr = reflect.ValueOf(aux).UnsafeAddr()
 	default:
@@ -445,6 +448,10 @@ func (bh *bamHeader) text() (t string) {
 }
 
 func (bh *bamHeader) header() {}
+
+type stringHeader string
+
+func (sh stringHeader) header() {}
 
 type textHeader []byte
 
