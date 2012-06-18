@@ -58,6 +58,10 @@ func (self *SAMFile) Write(r *Record) (n int, err error) {
 	return self.samWrite(r.bamRecord)
 }
 
+func (self *SAMFile) Header() *Header {
+	return &Header{self.header()}
+}
+
 func (self *SAMFile) ReferenceNames() []string {
 	return self.header().targetNames()
 }
