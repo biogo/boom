@@ -18,3 +18,13 @@ package boom
 type Header struct {
 	*bamHeader
 }
+
+func (self *Header) GetTargetID(chr string) (id int, ok bool) {
+	id = self.bamGetTid(chr)
+	if id < 0 {
+		return
+	}
+	ok = true
+
+	return
+}
