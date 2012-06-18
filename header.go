@@ -15,10 +15,13 @@
 
 package boom
 
+// A Header represents a BAM header.
 type Header struct {
 	*bamHeader
 }
 
+// GetTargetID returns the tid corresponding to the string chr and true if a match is present.
+// If no matching tid is found -1 and false are returned.
 func (self *Header) GetTargetID(chr string) (id int, ok bool) {
 	id = self.bamGetTid(chr)
 	if id < 0 {

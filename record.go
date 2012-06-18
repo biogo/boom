@@ -23,6 +23,7 @@ import (
 	"unsafe"
 )
 
+// A Record contains alignment data for one BAM alignment record.
 type Record struct {
 	*bamRecord
 	filled     bool
@@ -34,31 +35,38 @@ type Record struct {
 	auxTags    []Aux
 }
 
+// ReferenceID returns the target ID number for the alignment.
 func (self *Record) ReferenceID() int {
 	self.fillData()
 	return int(self.tid())
 }
 
+// Name returns the name of the alignment query.
 func (self *Record) Name() string {
 	self.fillData()
 	return self.nameStr
 }
 
+// Seq returns a byte slice containing the sequence of the alignment query.
 func (self *Record) Seq() []byte {
 	self.fillData()
 	return self.seqBytes
 }
 
+// Quality returns an int8 slice containing the Phred quality scores of the alignment query.
 func (self *Record) Quality() []int8 {
 	self.fillData()
 	return self.qualScores
 }
 
+// Cigar returns a slice of CigarOps describing the alignment.
 func (self *Record) Cigar() []CigarOp {
 	self.fillData()
 	return self.cigar
 }
 
+// Tag returns an Aux tag whose tag ID matches the first two bytes of tag and true.
+// If no tag matches, nil and false are returned.
 func (self *Record) Tag(tag []byte) (v Aux, ok bool) {
 	self.fillData()
 	for i := range self.auxTags {
@@ -69,31 +77,40 @@ func (self *Record) Tag(tag []byte) (v Aux, ok bool) {
 	return
 }
 
+// Tags returns all Aux tags for the aligment.
 func (self *Record) Tags() []Aux {
 	self.fillData()
 	return self.auxTags
 }
 
+// Start returns the lower-coordinate end of the alignment.
 func (self *Record) Start() int {
 	return int(self.pos())
 }
 
+// Len returns the length of the alignment.
 func (self *Record) Len() int {
 	return int(self.lQseq())
 }
 
+// End returns the higher-coordinate end of the alignment.
 func (self *Record) End() int {
 	return int(self.pos() + self.lQseq())
 }
 
+// Score returns the quality of the alignment.
 func (self *Record) Score() byte {
 	return self.qual()
 }
 
+// Flags returns the SAM flags for the alignment record.
 func (self *Record) Flags() Flags {
 	return self.flag()
 }
 
+// Strand returns an int8 indicating the strand of the alignment. A positive return indicates
+// alignment in the forward orientation, a negative returns indicates alignemnt in the reverse
+// orientation.
 func (self *Record) Strand() int8 {
 	if self.Flags()&Reverse == Reverse {
 		return -1
@@ -123,6 +140,8 @@ var (
 	}
 )
 
+// fillData interogates the bam1_t->data in the context of the bam1_t description fields to fill the Record's fields.
+// fillData is idempotent in this implementation although this may change.
 func (self *Record) fillData() {
 	if self.filled || self.bamRecord.b == nil {
 		return
@@ -174,30 +193,37 @@ func (self *Record) fillData() {
 	self.filled = true
 }
 
-// Compact Idiosyncratic Gapped Alignment Report
+// A CigarOp represents a Compact Idiosyncratic Gapped Alignment Report operation.
 type CigarOp uint32
 
+// Type returns the type of the CIGAR operation for the CigarOp.
 func (co CigarOp) Type() CigarOpType { return CigarOpType(co & 0xf) }
-func (co CigarOp) Len() int          { return int(co >> 4) }
-func (co CigarOp) String() string    { return fmt.Sprintf("%d%s", co.Len(), co.Type().String()) }
 
+// Len returns the number of positions affected by the CigarOp CIGAR operation.
+func (co CigarOp) Len() int { return int(co >> 4) }
+
+// String returns the string representation of the CigarOp
+func (co CigarOp) String() string { return fmt.Sprintf("%d%s", co.Len(), co.Type().String()) }
+
+// A CigarOpType represents the type of operation described by a CigarOp.
 type CigarOpType byte
 
 const (
-	CigarMatch CigarOpType = iota
-	CigarInsertion
-	CigarDeletion
-	CigarSkipped
-	CigarSoftClipped
-	CigarHardClipped
-	CigarPadded
-	CigarEqual
-	CigarMismatch
+	CigarMatch       CigarOpType = iota // Alignment match (can be a sequence match or mismatch).
+	CigarInsertion                      // Insertion to the reference.
+	CigarDeletion                       // Deletion from the reference.
+	CigarSkipped                        // Skipped region from the reference.
+	CigarSoftClipped                    // Soft clipping (clipped sequences present in SEQ).
+	CigarHardClipped                    // Hard clipping (clipped sequences NOT present in SEQ).
+	CigarPadded                         // Padding (silent deletion from padded reference).
+	CigarEqual                          // Sequence match.
+	CigarMismatch                       // Sequence mismatch.
 	lastCigar
 )
 
 var cigarOps = []string{"M", "I", "D", "N", "S", "H", "P", "=", "X", "?"}
 
+// String returns the string representation of a CigarOpType.
 func (ct CigarOpType) String() string {
 	if ct < 0 || ct > lastCigar {
 		ct = lastCigar
@@ -205,6 +231,7 @@ func (ct CigarOpType) String() string {
 	return cigarOps[ct]
 }
 
+// An Aux represents an auxilliary tag data field from a SAM alignment record.
 type Aux []byte
 
 var (
@@ -230,6 +257,8 @@ var (
 	}
 )
 
+// parseAux examines the data of a SAM record's OPT fields,
+// returning a slice of Aux that are backed by the original data.
 func parseAux(aux []byte) (aa []Aux) {
 	for i := 0; i+2 < len(aux); {
 		t := aux[i+2]
@@ -269,20 +298,29 @@ func parseAux(aux []byte) (aa []Aux) {
 	return
 }
 
+// buildAux constructs a single byte slice that represents a slice of Aux.
 func buildAux(aa []Aux) (aux []byte) {
 	for _, a := range aa {
-		// TODO: validate each a
+		// TODO: validate each 'a'
+		// TODO: note that Z and H types should have a terminal null added.
 		aux = append(aux, []byte(a)...)
 	}
 	return
 }
 
+// String returns the string representation of an Aux type.
 func (self Aux) String() string {
 	return fmt.Sprintf("%s:%c:%v", []byte(self[:2]), auxTypes[self.Type()], self.Value())
 }
 
+// Tag returns the string representation of the tag ID.
 func (self Aux) Tag() string { return string(self[:2]) }
-func (self Aux) Type() byte  { return self[2] }
+
+// Type returns a byte corresponding to the type of the auxilliary tag.
+// Returned values are in {'A', 'c', 'C', 's', 'S', 'i', 'I', 'f', 'Z', 'H', 'B'}.
+func (self Aux) Type() byte { return self[2] }
+
+// Value returns v containing the value of the auxilliary tag.
 func (self Aux) Value() (v interface{}) {
 	switch t := self.Type(); t {
 	case 'A':
