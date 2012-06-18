@@ -382,13 +382,13 @@ func (bi *bamIndex) bamIndexDestroy() (err error) {
 	return
 }
 
-// A BamFetchFn is called on each bamRecord found by bamFetch. The integer return value is ignored
+// A bamFetchFn is called on each bamRecord found by bamFetch. The integer return value is ignored
 // internally by bam_fetch, but is specified in the libbam headers.
-type BamFetchFn func(*bamRecord) int
+type bamFetchFn func(*bamRecord) int
 
 // bamFetch calls fn on all BAM records within the interval [beg, end) of the reference sequence
 // identified by tid. Note that beg >= 0 || beg = 0.
-func (sf *samFile) bamFetch(bi *bamIndex, tid, beg, end int, fn BamFetchFn) (ret int, err error) {
+func (sf *samFile) bamFetch(bi *bamIndex, tid, beg, end int, fn bamFetchFn) (ret int, err error) {
 	if sf.fp == nil || bi.idx == nil {
 		return 0, valueIsNil
 	}
