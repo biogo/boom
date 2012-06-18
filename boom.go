@@ -23,6 +23,8 @@ package boom
 #cgo LDFLAGS: -lz
 #include "sam.h"
 #include "bam_endian.h"
+void bam_init_header_hash(bam_header_t *header);
+void bam_destroy_header_hash(bam_header_t *header);
 */
 import "C"
 
@@ -282,6 +284,12 @@ func (sf *samFile) samClose() error {
 		return valueIsNil
 	}
 
+	if h := sf.header(); h.bh.hash != nil {
+		C.bam_destroy_header_hash(
+			(*C.bam_header_t)(unsafe.Pointer(h.bh)),
+		)
+	}
+
 	C.samclose((*C.samfile_t)(unsafe.Pointer(sf.fp)))
 
 	return nil
@@ -446,16 +454,23 @@ type bamHeader struct {
 }
 
 // bamGetTid return the target id for for a reference sequence target matching the string, name.
-func (bh *bamHeader) bamGetTid(name string) (int, error) {
+func (bh *bamHeader) bamGetTid(name string) int {
+	if bh.bh == nil {
+		panic(valueIsNil)
+	}
+
 	sn := C.CString(name)
 	defer C.free(unsafe.Pointer(sn))
 
-	tid, err := C.bam_get_tid(
+	C.bam_init_header_hash( // This is idempotent - checks against NULL in bam_aux.c
+		(*C.bam_header_t)(unsafe.Pointer(bh.bh)),
+	)
+	tid := C.bam_get_tid(
 		(*C.bam_header_t)(unsafe.Pointer(bh.bh)),
 		(*C.char)(unsafe.Pointer(sn)),
 	)
 
-	return int(tid), err
+	return int(tid)
 }
 
 // nTargets returns the number of reference sequence targets described in the BAM header.
