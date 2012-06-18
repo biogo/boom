@@ -31,7 +31,7 @@ func OpenBAM(filename string) (b *BAMFile, err error) {
 
 var bWModes = [2]string{"wb", "wbu"}
 
-func CreateBAM(filename string, ref Header, comp bool) (b *BAMFile, err error) {
+func CreateBAM(filename string, ref *Header, comp bool) (b *BAMFile, err error) {
 	var mode string
 	if comp {
 		mode = bWModes[0]
