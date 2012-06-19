@@ -15,10 +15,13 @@
 
 package boom
 
+// A SAMFile represents a SAM (text Sequence Alignment/Map) file.
 type SAMFile struct {
 	*samFile
 }
 
+// OpenSAM opens the file, filename as a SAM file.
+// If an error occurrs it is returned with a nil SAMFile pointer.
 func OpenSAM(filename, ref string) (s *SAMFile, err error) {
 	h := textHeader(ref)
 	sf, err := samOpen(filename, "r", h)
@@ -30,6 +33,7 @@ func OpenSAM(filename, ref string) (s *SAMFile, err error) {
 
 var tWModes = [2]string{"w", "wh"}
 
+// CreateBAM opens a file, filename for writing. ref is required to point to a valid Header.
 func CreateSAM(filename string, ref *Header) (s *SAMFile, err error) {
 	var mode string
 	if ref == nil {
@@ -44,16 +48,19 @@ func CreateSAM(filename string, ref *Header) (s *SAMFile, err error) {
 	return &SAMFile{sf}, nil
 }
 
+// Close closes the SAMFile, freeing any associated data.
 func (self *SAMFile) Close() error {
 	return self.samClose()
 }
 
+// Read reads a single SAM record and returns this or any error, and the number of bytes read.
 func (self *SAMFile) Read() (r *Record, n int, err error) {
 	n, br, err := self.samRead()
 	r = &Record{bamRecord: br}
 	return
 }
 
+// Write writes a BAM record, r, returning the number of bytes written and any error that occurred.
 func (self *SAMFile) Write(r *Record) (n int, err error) {
 	return self.samWrite(r.bamRecord)
 }
@@ -70,14 +77,19 @@ func (self *SAMFile) GetTargetID(chr string) (id int, ok bool) {
 	return
 }
 
+// ReferenceNames returns a slice of strings containing the names of reference sequences described
+// in the SAM file's header.
 func (self *SAMFile) ReferenceNames() []string {
 	return self.header().targetNames()
 }
 
+// ReferenceLengths returns a slice of integers containing the lengths of reference sequences described
+// in the SAM file's header.
 func (self *SAMFile) ReferenceLengths() []uint32 {
 	return self.header().targetLengths()
 }
 
+// Text returns the unparsed text of the SAM header as a string.
 func (self *SAMFile) Text() string {
 	return self.header().text()
 }

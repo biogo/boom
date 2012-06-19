@@ -15,10 +15,13 @@
 
 package boom
 
+// A BAMFile represents a BAM (Binary Sequence Alignment/Map) file.
 type BAMFile struct {
 	*samFile
 }
 
+// OpenBAM opens the file, filename as a BAM file.
+// If an error occurrs it is returned with a nil BAMFile pointer.
 func OpenBAM(filename string) (b *BAMFile, err error) {
 	sf, err := samOpen(filename, "rb", nil)
 	if err != nil {
@@ -29,6 +32,8 @@ func OpenBAM(filename string) (b *BAMFile, err error) {
 
 var bWModes = [2]string{"wb", "wbu"}
 
+// CreateBAM opens a file, filename for writing. ref is required to point to a valid Header.
+// If comp is true, compression is used.
 func CreateBAM(filename string, ref *Header, comp bool) (b *BAMFile, err error) {
 	var mode string
 	if comp {
@@ -43,16 +48,19 @@ func CreateBAM(filename string, ref *Header, comp bool) (b *BAMFile, err error) 
 	return &BAMFile{sf}, nil
 }
 
+// Close closes the BAMFile, freeing any associated data.
 func (self *BAMFile) Close() error {
 	return self.samClose()
 }
 
+// Read reads a single BAM record and returns this or any error, and the number of bytes read.
 func (self *BAMFile) Read() (r *Record, n int, err error) {
 	n, br, err := self.samRead()
 	r = &Record{bamRecord: br}
 	return
 }
 
+// Write writes a BAM record, r, returning the number of bytes written and any error that occurred.
 func (self *BAMFile) Write(r *Record) (n int, err error) {
 	return self.samWrite(r.bamRecord)
 }
@@ -69,14 +77,19 @@ func (self *BAMFile) GetTargetID(chr string) (id int, ok bool) {
 	return
 }
 
+// ReferenceNames returns a slice of strings containing the names of reference sequences described
+// in the BAM file's header.
 func (self *BAMFile) ReferenceNames() []string {
 	return self.header().targetNames()
 }
 
+// ReferenceLengths returns a slice of integers containing the lengths of reference sequences described
+// in the BAM file's header.
 func (self *BAMFile) ReferenceLengths() []uint32 {
 	return self.header().targetLengths()
 }
 
+// Text returns the unparsed text of the BAM header as a string.
 func (self *BAMFile) Text() string {
 	return self.header().text()
 }
