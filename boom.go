@@ -423,7 +423,7 @@ func (sf *samFile) bamFetch(bi *bamIndex, tid, beg, end int, fn bamFetchFn) (ret
 	return
 }
 
-// A bamFetchCFn is called on each bam_1t found by bamFetchC and the unsafe.Pointer is passed as a
+// A bamFetchCFn is called on each bam1_t found by bamFetchC and the unsafe.Pointer is passed as a
 // pointer to a store of user data. The integer return value is ignored internally by bam_fetch,
 // but is specified in the libbam headers.
 type bamFetchCFn func(*C.bam1_t, unsafe.Pointer) C.int
