@@ -58,10 +58,6 @@ func (self *SAMFile) Write(r *Record) (n int, err error) {
 	return self.samWrite(r.bamRecord)
 }
 
-func (self *SAMFile) Header() *Header {
-	return &Header{self.header()}
-}
-
 // GetTargetID returns the tid corresponding to the string chr and true if a match is present.
 // If no matching tid is found -1 and false are returned.
 func (self *SAMFile) GetTargetID(chr string) (id int, ok bool) {
