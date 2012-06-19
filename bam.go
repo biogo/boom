@@ -82,3 +82,16 @@ func (self *BAMFile) ReferenceLengths() []uint32 {
 func (self *BAMFile) Text() string {
 	return self.header().text()
 }
+
+// A FetchFn is called on each Record found by Fetch.
+type FetchFn func(*Record)
+
+// Fetch calls fn on all BAM records within the interval [beg, end) of the reference sequence
+// identified by chr. Note that beg >= 0 || beg = 0.
+func (self *BAMFile) Fetch(i *Index, tid int, beg, end int, fn FetchFn) (ret int, err error) {
+	f := func(b *bamRecord) {
+		fn(&Record{bamRecord: b})
+	}
+
+	return self.bamFetch(i.bamIndex, tid, beg, end, f)
+}

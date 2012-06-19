@@ -384,7 +384,7 @@ func (bi *bamIndex) bamIndexDestroy() (err error) {
 
 // A bamFetchFn is called on each bamRecord found by bamFetch. The integer return value is ignored
 // internally by bam_fetch, but is specified in the libbam headers.
-type bamFetchFn func(*bamRecord) int
+type bamFetchFn func(*bamRecord)
 
 // bamFetch calls fn on all BAM records within the interval [beg, end) of the reference sequence
 // identified by tid. Note that beg >= 0 || beg = 0.
@@ -397,21 +397,25 @@ func (sf *samFile) bamFetch(bi *bamIndex, tid, beg, end int, fn bamFetchFn) (ret
 		return 0, notBamFile
 	}
 
-	f := func(b *C.bam1_t, _ *[0]byte) C.int {
-		return C.int(fn(&bamRecord{(*C.bam1_t)(unsafe.Pointer(b))}))
+	b := (*C.bam1_t)(unsafe.Pointer(C.malloc((C.size_t)(unsafe.Sizeof(C.bam1_t{})))))
+	if b == nil {
+		return 0, couldNotAllocate
 	}
+	*b = C.bam1_t{}
+	br := newBamRecord(b)
+	fp := *(*C.bamFile)(unsafe.Pointer(&sf.fp.x))
+	iter := C.bam_iter_query(bi.idx, C.int(tid), C.int(beg), C.int(end))
+	for {
+		ret = int(C.bam_iter_read(fp, iter, b))
+		if ret < 0 {
+			break
+		}
+		fn(br)
+	}
+	br.bamRecordFree()
+	C.bam_iter_destroy(iter)
 
-	r := C.bam_fetch(
-		*(*C.bamFile)(unsafe.Pointer(&sf.fp.x)),
-		bi.idx,
-		C.int(tid),
-		C.int(beg),
-		C.int(end),
-		unsafe.Pointer(nil),
-		(*[0]byte)(unsafe.Pointer(&f)),
-	)
-
-	return int(r), nil
+	return
 }
 
 // A bamFetchCFn is called on each bam_1t found by bamFetchC and the unsafe.Pointer is passed as a
