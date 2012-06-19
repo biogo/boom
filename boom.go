@@ -402,7 +402,7 @@ func (sf *samFile) bamFetch(bi *bamIndex, tid, beg, end int, fn bamFetchFn) (ret
 	}
 
 	r := C.bam_fetch(
-		(*C.BGZF)(unsafe.Pointer(sf.fp)),
+		*(*C.bamFile)(unsafe.Pointer(&sf.fp.x)),
 		bi.idx,
 		C.int(tid),
 		C.int(beg),
@@ -431,7 +431,7 @@ func (sf *samFile) bamFetchC(bi *bamIndex, tid, beg, end int, data unsafe.Pointe
 	}
 
 	r := C.bam_fetch(
-		(*C.BGZF)(unsafe.Pointer(sf.fp)),
+		*(*C.bamFile)(unsafe.Pointer(&sf.fp.x)),
 		bi.idx,
 		C.int(tid),
 		C.int(beg),
