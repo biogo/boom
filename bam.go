@@ -15,8 +15,6 @@
 
 package boom
 
-import ()
-
 type BAMFile struct {
 	*samFile
 }
