@@ -59,8 +59,16 @@ func (self *BAMFile) Write(r *Record) (n int, err error) {
 	return self.samWrite(r.bamRecord)
 }
 
-func (self *BAMFile) Header() *Header {
-	return &Header{self.header()}
+// GetTargetID returns the tid corresponding to the string chr and true if a match is present.
+// If no matching tid is found -1 and false are returned.
+func (self *BAMFile) GetTargetID(chr string) (id int, ok bool) {
+	id = self.header().bamGetTid(chr)
+	if id < 0 {
+		return
+	}
+	ok = true
+
+	return
 }
 
 func (self *BAMFile) ReferenceNames() []string {

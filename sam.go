@@ -62,6 +62,18 @@ func (self *SAMFile) Header() *Header {
 	return &Header{self.header()}
 }
 
+// GetTargetID returns the tid corresponding to the string chr and true if a match is present.
+// If no matching tid is found -1 and false are returned.
+func (self *SAMFile) GetTargetID(chr string) (id int, ok bool) {
+	id = self.header().bamGetTid(chr)
+	if id < 0 {
+		return
+	}
+	ok = true
+
+	return
+}
+
 func (self *SAMFile) ReferenceNames() []string {
 	return self.header().targetNames()
 }
