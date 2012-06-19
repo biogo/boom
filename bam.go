@@ -98,7 +98,8 @@ func (self *BAMFile) Text() string {
 type FetchFn func(*Record)
 
 // Fetch calls fn on all BAM records within the interval [beg, end) of the reference sequence
-// identified by chr. Note that beg >= 0 || beg = 0.
+// identified by chr. Note that beg >= 0 || beg = 0. The Record value passed by pointer to fn is reused
+// each iteration and is unusable after Fetch returns, so the values should not be stored.
 func (self *BAMFile) Fetch(i *Index, tid int, beg, end int, fn FetchFn) (ret int, err error) {
 	f := func(b *bamRecord) {
 		fn(&Record{bamRecord: b})
