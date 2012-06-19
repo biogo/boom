@@ -64,10 +64,19 @@ type bamRecord struct {
 	b *C.bam1_t
 }
 
-// newBamRecord creates a new bamRecord, setting a finaliser that C.free()s the contained bam1_t.
+// newBamRecord creates a new bamRecord wrapping b or a newly malloc'd bam1_t if b is nil,
+// and setting a finaliser that C.free()s the contained bam1_t.
 // newBamRecord should always be used unless the bamRecord will be explicitly memory managed, or
 // wraps a bam1_t that will be memory managed elsewhere.
-func newBamRecord(b *C.bam1_t) (br *bamRecord) {
+func newBamRecord(b *C.bam1_t) (br *bamRecord, err error) {
+	if b == nil {
+		b = (*C.bam1_t)(unsafe.Pointer(C.malloc((C.size_t)(unsafe.Sizeof(C.bam1_t{})))))
+
+		if b == nil {
+			return nil, couldNotAllocate
+		}
+		*b = C.bam1_t{}
+	}
 	br = &bamRecord{b}
 	runtime.SetFinalizer(br, (*bamRecord).bamRecordFree)
 
@@ -302,13 +311,10 @@ func (sf *samFile) samRead() (n int, br *bamRecord, err error) {
 		return 0, nil, valueIsNil
 	}
 
-	b := (*C.bam1_t)(unsafe.Pointer(C.malloc((C.size_t)(unsafe.Sizeof(C.bam1_t{})))))
-
-	if b == nil {
-		return 0, nil, couldNotAllocate
+	br, err = newBamRecord(nil)
+	if err != nil {
+		return
 	}
-	*b = C.bam1_t{}
-	br = newBamRecord(b)
 
 	cn, err := C.samread(
 		(*C.samfile_t)(unsafe.Pointer(sf.fp)),
@@ -397,12 +403,11 @@ func (sf *samFile) bamFetch(bi *bamIndex, tid, beg, end int, fn bamFetchFn) (ret
 		return 0, notBamFile
 	}
 
-	b := (*C.bam1_t)(unsafe.Pointer(C.malloc((C.size_t)(unsafe.Sizeof(C.bam1_t{})))))
-	if b == nil {
-		return 0, couldNotAllocate
+	br, err := newBamRecord(nil)
+	if err != nil {
+		return
 	}
-	*b = C.bam1_t{}
-	br := newBamRecord(b)
+	b := br.b
 	fp := *(*C.bamFile)(unsafe.Pointer(&sf.fp.x))
 	iter := C.bam_iter_query(bi.idx, C.int(tid), C.int(beg), C.int(end))
 	for {
