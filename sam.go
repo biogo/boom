@@ -65,9 +65,9 @@ func (self *SAMFile) Write(r *Record) (n int, err error) {
 	return self.samWrite(r.bamRecord)
 }
 
-// GetTargetID returns the tid corresponding to the string chr and true if a match is present.
+// RefID returns the tid corresponding to the string chr and true if a match is present.
 // If no matching tid is found -1 and false are returned.
-func (self *SAMFile) GetTargetID(chr string) (id int, ok bool) {
+func (self *SAMFile) RefID(chr string) (id int, ok bool) {
 	id = self.header().bamGetTid(chr)
 	if id < 0 {
 		return
@@ -77,15 +77,15 @@ func (self *SAMFile) GetTargetID(chr string) (id int, ok bool) {
 	return
 }
 
-// ReferenceNames returns a slice of strings containing the names of reference sequences described
+// RefNames returns a slice of strings containing the names of reference sequences described
 // in the SAM file's header.
-func (self *SAMFile) ReferenceNames() []string {
+func (self *SAMFile) RefNames() []string {
 	return self.header().targetNames()
 }
 
-// ReferenceLengths returns a slice of integers containing the lengths of reference sequences described
+// RefLengths returns a slice of integers containing the lengths of reference sequences described
 // in the SAM file's header.
-func (self *SAMFile) ReferenceLengths() []uint32 {
+func (self *SAMFile) RefLengths() []uint32 {
 	return self.header().targetLengths()
 }
 

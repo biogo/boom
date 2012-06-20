@@ -17,19 +17,19 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("%s %d\n%s", bf.ReferenceNames(), bf.ReferenceLengths(), bf.Text())
+	fmt.Printf("%s %d\n%s", bf.RefNames(), bf.RefLengths(), bf.Text())
 	for {
 		r, _, err := bf.Read()
 		if err != nil {
 			break
 		}
-		fmt.Printf("%d %s %d-%d (%d) %v %d %d %s %v Fl:%v %q\n", r.ReferenceID(), r.Name(), r.Start(), r.End(), r.Len(), r.Cigar(), r.Strand(), r.Score(), r.Seq(), r.Quality(), r.Flags(), r.Tags())
+		fmt.Printf("%d %s %d-%d (%d) %v %d %d %s %v Fl:%v %q\n", r.RefID(), r.Name(), r.Start(), r.End(), r.Len(), r.Cigar(), r.Strand(), r.Score(), r.Seq(), r.Quality(), r.Flags(), r.Tags())
 	}
 
 	fmt.Println("Fetch:", chr, start, end)
 
 	fn := func(r *boom.Record) {
-		fmt.Printf("%d %s %d-%d (%d) %v %d %d %s %v Fl:%v %q\n", r.ReferenceID(), r.Name(), r.Start(), r.End(), r.Len(), r.Cigar(), r.Strand(), r.Score(), r.Seq(), r.Quality(), r.Flags(), r.Tags())
+		fmt.Printf("%d %s %d-%d (%d) %v %d %d %s %v Fl:%v %q\n", r.RefID(), r.Name(), r.Start(), r.End(), r.Len(), r.Cigar(), r.Strand(), r.Score(), r.Seq(), r.Quality(), r.Flags(), r.Tags())
 	}
 
 	i, err := boom.LoadIndex("test-sort.bam")
@@ -37,7 +37,7 @@ func main() {
 		panic(err)
 	}
 
-	if tid, ok := bf.GetTargetID(chr); ok {
+	if tid, ok := bf.RefID(chr); ok {
 		_, err = bf.Fetch(i, tid, start, end, fn)
 		if err != nil {
 			panic(err)

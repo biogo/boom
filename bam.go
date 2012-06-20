@@ -65,9 +65,9 @@ func (self *BAMFile) Write(r *Record) (n int, err error) {
 	return self.samWrite(r.bamRecord)
 }
 
-// GetTargetID returns the tid corresponding to the string chr and true if a match is present.
+// RefID returns the tid corresponding to the string chr and true if a match is present.
 // If no matching tid is found -1 and false are returned.
-func (self *BAMFile) GetTargetID(chr string) (id int, ok bool) {
+func (self *BAMFile) RefID(chr string) (id int, ok bool) {
 	id = self.header().bamGetTid(chr)
 	if id < 0 {
 		return
@@ -77,15 +77,15 @@ func (self *BAMFile) GetTargetID(chr string) (id int, ok bool) {
 	return
 }
 
-// ReferenceNames returns a slice of strings containing the names of reference sequences described
+// RefNames returns a slice of strings containing the names of reference sequences described
 // in the BAM file's header.
-func (self *BAMFile) ReferenceNames() []string {
+func (self *BAMFile) RefNames() []string {
 	return self.header().targetNames()
 }
 
-// ReferenceLengths returns a slice of integers containing the lengths of reference sequences described
+// RefLengths returns a slice of integers containing the lengths of reference sequences described
 // in the BAM file's header.
-func (self *BAMFile) ReferenceLengths() []uint32 {
+func (self *BAMFile) RefLengths() []uint32 {
 	return self.header().targetLengths()
 }
 

@@ -35,8 +35,8 @@ type Record struct {
 	auxTags    []Aux
 }
 
-// ReferenceID returns the target ID number for the alignment.
-func (self *Record) ReferenceID() int {
+// RefID returns the target ID number for the alignment.
+func (self *Record) RefID() int {
 	self.fillData()
 	return int(self.tid())
 }
