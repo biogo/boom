@@ -207,7 +207,7 @@ type samFile struct {
 	fp *C.samfile_t
 }
 
-// samOpen opens a SAM or BAM file with the given filename, mode and optional auxilliary header.
+// samOpen/samFdOpen open a SAM or BAM file with the given filename/fd, mode and optional auxilliary header.
 // According to sam.h:
 //
 // mode matches /[rw](b?)(u?)(h?)([xX]?)/
@@ -255,6 +255,41 @@ func samOpen(filename, mode string, aux header) (sf *samFile, err error) {
 
 	fp, err := C.samopen(
 		(*C.char)(unsafe.Pointer(fn)),
+		(*C.char)(unsafe.Pointer(m)),
+		unsafe.Pointer(auxAddr),
+	)
+	sf = &samFile{fp: (*C.samfile_t)(unsafe.Pointer(fp))}
+	runtime.SetFinalizer(sf, (*samFile).samClose)
+
+	return
+}
+func samFdOpen(fd uintptr, mode string, aux header) (sf *samFile, err error) {
+	m := C.CString(mode)
+	defer C.free(unsafe.Pointer(m))
+
+	var auxAddr uintptr
+	switch aux.(type) {
+	case textHeader:
+		xv := reflect.ValueOf(aux)
+		if xv.Len() > 0 {
+			auxAddr = xv.Index(0).UnsafeAddr()
+		} else {
+			auxAddr = 0
+		}
+	case stringHeader:
+		auxAddr := C.CString(string(aux.(stringHeader)))
+		defer C.free(unsafe.Pointer(auxAddr))
+	case *bamHeader:
+		auxAddr = reflect.ValueOf(aux).UnsafeAddr()
+	default:
+		if aux == nil {
+			break
+		}
+		panic(fmt.Sprintf("boom: wrong type %T", aux))
+	}
+
+	fp, err := C.samdopen(
+		C.int(fd),
 		(*C.char)(unsafe.Pointer(m)),
 		unsafe.Pointer(auxAddr),
 	)
