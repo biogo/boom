@@ -96,7 +96,7 @@ samfile_t *samdopen(int fd, const char *mode, const void *aux)
 		} else { // text
 			// open file
 			fp->x.tamw = fdopen(fd, "w");
-			if (fp->x.tamr == 0) goto open_err_ret;
+			if (fp->x.tamw == 0) goto open_err_ret;
 			if (strchr(mode, 'X')) fp->type |= BAM_OFSTR<<2;
 			else if (strchr(mode, 'x')) fp->type |= BAM_OFHEX<<2;
 			else fp->type |= BAM_OFDEC<<2;
