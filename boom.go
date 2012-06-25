@@ -327,6 +327,7 @@ func (sf *samFile) samClose() error {
 	if sf.fp == nil {
 		return valueIsNil
 	}
+	runtime.SetFinalizer(sf, nil)
 
 	if h := sf.header(); h.bh.hash != nil {
 		C.bam_destroy_header_hash(
@@ -335,6 +336,7 @@ func (sf *samFile) samClose() error {
 	}
 
 	C.samclose((*C.samfile_t)(unsafe.Pointer(sf.fp)))
+	sf.fp = nil
 
 	return nil
 }
