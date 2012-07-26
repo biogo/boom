@@ -330,8 +330,14 @@ func (self Aux) String() string {
 	return fmt.Sprintf("%s:%c:%v", []byte(self[:2]), auxTypes[self.Type()], self.Value())
 }
 
+// A Tag represents an auxilliary tag label.
+type Tag [2]byte
+
+// String returns a string representation of a Tag.
+func (self Tag) String() string { return string(self[:]) }
+
 // Tag returns the string representation of the tag ID.
-func (self Aux) Tag() string { return string(self[:2]) }
+func (self Aux) Tag() Tag { var t Tag; copy(t[:], self[:2]); return t }
 
 // Type returns a byte corresponding to the type of the auxilliary tag.
 // Returned values are in {'A', 'c', 'C', 's', 'S', 'i', 'I', 'f', 'Z', 'H', 'B'}.
