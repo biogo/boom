@@ -125,6 +125,16 @@ func (self *Record) Strand() int8 {
 	return 1
 }
 
+// NextRefID returns the reference ID of the next segment/mate.
+func (self *Record) NextRefID() int {
+	return int(self.mtid())
+}
+
+// NextStart returns the start position of the next segment/mate.
+func (self *Record) NextStart() int {
+	return int(self.mpos())
+}
+
 var (
 	bamNT16TableRev = [16]byte{'=', 'A', 'C', 'M', 'G', 'R', 'S', 'V', 'T', 'W', 'Y', 'H', 'K', 'D', 'B', 'N'}
 	bamNT16Table    = [256]byte{
