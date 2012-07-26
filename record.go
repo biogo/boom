@@ -94,8 +94,15 @@ func (self *Record) Len() int {
 }
 
 // End returns the higher-coordinate end of the alignment.
+// This is the start plus the sum of CigarMatch lengths.
 func (self *Record) End() int {
-	return int(self.pos() + self.lQseq())
+	var mlen int
+	for _, co := range self.Cigar() {
+		if co.Type() == CigarMatch {
+			mlen += co.Len()
+		}
+	}
+	return int(self.pos()) + mlen
 }
 
 // Score returns the quality of the alignment.
