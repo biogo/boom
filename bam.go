@@ -16,7 +16,6 @@
 package boom
 
 import (
-	"io"
 	"os"
 )
 
