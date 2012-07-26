@@ -15,9 +15,28 @@
 
 package boom
 
+import (
+	"io"
+	"os"
+)
+
 // A BAMFile represents a BAM (Binary Sequence Alignment/Map) file.
 type BAMFile struct {
 	*samFile
+}
+
+var bWModes = [2]string{"wb", "wbu"}
+
+// OpenBAMFile opens the file, f as a BAM file.
+// If an error occurrs it is returned with a nil BAMFile pointer.
+// The valid values of mode and ref are described in the overview and are derived
+// from the samtools documentation.
+func OpenBAMFile(f *os.File, mode string, ref *Header) (b *BAMFile, err error) {
+	sf, err := samFdOpen(f.Fd(), mode, ref)
+	if err != nil {
+		return
+	}
+	return &BAMFile{sf}, nil
 }
 
 // OpenBAM opens the file, filename as a BAM file.
@@ -29,8 +48,6 @@ func OpenBAM(filename string) (b *BAMFile, err error) {
 	}
 	return &BAMFile{sf}, nil
 }
-
-var bWModes = [2]string{"wb", "wbu"}
 
 // CreateBAM opens a file, filename for writing. ref is required to point to a valid Header.
 // If comp is true, compression is used.

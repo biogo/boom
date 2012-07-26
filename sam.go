@@ -15,9 +15,27 @@
 
 package boom
 
+import (
+	"os"
+)
+
 // A SAMFile represents a SAM (text Sequence Alignment/Map) file.
 type SAMFile struct {
 	*samFile
+}
+
+var tWModes = [2]string{"w", "wh"}
+
+// OpenSAMFile opens the file, f as a SAM file.
+// If an error occurrs it is returned with a nil SAMFile pointer.
+// The valid values of mode and ref are described in the overview and are
+// derived from the samtools documentation.
+func OpenSAMFile(f *os.File, mode string, ref *Header) (b *SAMFile, err error) {
+	sf, err := samFdOpen(f.Fd(), mode, ref)
+	if err != nil {
+		return
+	}
+	return &SAMFile{sf}, nil
 }
 
 // OpenSAM opens the file, filename as a SAM file.
@@ -30,8 +48,6 @@ func OpenSAM(filename, ref string) (s *SAMFile, err error) {
 	}
 	return &SAMFile{sf}, nil
 }
-
-var tWModes = [2]string{"w", "wh"}
 
 // CreateBAM opens a file, filename for writing. ref is required to point to a valid Header.
 func CreateSAM(filename string, ref *Header) (s *SAMFile, err error) {
