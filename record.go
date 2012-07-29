@@ -37,38 +37,38 @@ type Record struct {
 
 // RefID returns the target ID number for the alignment.
 func (self *Record) RefID() int {
-	self.fillData()
+	self.unmarshalData()
 	return int(self.tid())
 }
 
 // Name returns the name of the alignment query.
 func (self *Record) Name() string {
-	self.fillData()
+	self.unmarshalData()
 	return self.nameStr
 }
 
 // Seq returns a byte slice containing the sequence of the alignment query.
 func (self *Record) Seq() []byte {
-	self.fillData()
+	self.unmarshalData()
 	return self.seqBytes
 }
 
 // Quality returns an int8 slice containing the Phred quality scores of the alignment query.
 func (self *Record) Quality() []int8 {
-	self.fillData()
+	self.unmarshalData()
 	return self.qualScores
 }
 
 // Cigar returns a slice of CigarOps describing the alignment.
 func (self *Record) Cigar() []CigarOp {
-	self.fillData()
+	self.unmarshalData()
 	return self.cigar
 }
 
 // Tag returns an Aux tag whose tag ID matches the first two bytes of tag and true.
 // If no tag matches, nil and false are returned.
 func (self *Record) Tag(tag []byte) (v Aux, ok bool) {
-	self.fillData()
+	self.unmarshalData()
 	for i := range self.auxTags {
 		if bytes.Compare(self.auxTags[i][:2], tag) == 0 {
 			return self.auxTags[i], true
@@ -79,7 +79,7 @@ func (self *Record) Tag(tag []byte) (v Aux, ok bool) {
 
 // Tags returns all Aux tags for the aligment.
 func (self *Record) Tags() []Aux {
-	self.fillData()
+	self.unmarshalData()
 	return self.auxTags
 }
 
@@ -157,9 +157,9 @@ var (
 	}
 )
 
-// fillData interogates the bam1_t->data in the context of the bam1_t description fields to fill the Record's fields.
-// fillData is idempotent in this implementation although this may change.
-func (self *Record) fillData() {
+// unmarshalData interogates the bam1_t->data in the context of the bam1_t description fields to fill the Record's fields.
+// unmarshalData is idempotent in this implementation although this may change.
+func (self *Record) unmarshalData() {
 	if self.filled || self.bamRecord.b == nil {
 		return
 	}
