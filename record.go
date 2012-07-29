@@ -135,6 +135,24 @@ func (self *Record) NextStart() int {
 	return int(self.mpos())
 }
 
+// String returns a string representation of the Record.
+func (self *Record) String() string {
+	return fmt.Sprintf("%s %v %d:%d..%d %d %v %d:%d %d %s %v %v",
+		self.Name(),
+		self.Flags(),
+		self.RefID(),
+		self.Start(),
+		self.End(),
+		self.Score(),
+		self.Cigar(),
+		self.NextRefID(),
+		self.NextStart(),
+		self.Len(),
+		self.Seq(),
+		self.Quality(),
+		self.Tags())
+}
+
 var (
 	bamNT16TableRev = [16]byte{'=', 'A', 'C', 'M', 'G', 'R', 'S', 'V', 'T', 'W', 'Y', 'H', 'K', 'D', 'B', 'N'}
 	bamNT16Table    = [256]byte{
