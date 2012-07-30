@@ -232,20 +232,19 @@ func samOpen(filename, mode string, aux header) (sf *samFile, err error) {
 	defer C.free(unsafe.Pointer(fn))
 	defer C.free(unsafe.Pointer(m))
 
-	var auxAddr uintptr
-	switch aux.(type) {
+	var auxAddr unsafe.Pointer
+	switch a := aux.(type) {
 	case textHeader:
-		xv := reflect.ValueOf(aux)
-		if xv.Len() > 0 {
-			auxAddr = xv.Index(0).UnsafeAddr()
+		if len(a) > 0 {
+			auxAddr = unsafe.Pointer(&a[0])
 		} else {
-			auxAddr = 0
+			auxAddr = nil
 		}
 	case stringHeader:
-		auxAddr := C.CString(string(aux.(stringHeader)))
+		auxAddr = unsafe.Pointer(C.CString(string(a)))
 		defer C.free(unsafe.Pointer(auxAddr))
 	case *bamHeader:
-		auxAddr = reflect.ValueOf(aux).UnsafeAddr()
+		auxAddr = unsafe.Pointer(a.bh)
 	default:
 		if aux == nil {
 			break
@@ -267,20 +266,19 @@ func samFdOpen(fd uintptr, mode string, aux header) (sf *samFile, err error) {
 	m := C.CString(mode)
 	defer C.free(unsafe.Pointer(m))
 
-	var auxAddr uintptr
-	switch aux.(type) {
+	var auxAddr unsafe.Pointer
+	switch a := aux.(type) {
 	case textHeader:
-		xv := reflect.ValueOf(aux)
-		if xv.Len() > 0 {
-			auxAddr = xv.Index(0).UnsafeAddr()
+		if len(a) > 0 {
+			auxAddr = unsafe.Pointer(&a[0])
 		} else {
-			auxAddr = 0
+			auxAddr = nil
 		}
 	case stringHeader:
-		auxAddr := C.CString(string(aux.(stringHeader)))
+		auxAddr = unsafe.Pointer(C.CString(string(a)))
 		defer C.free(unsafe.Pointer(auxAddr))
 	case *bamHeader:
-		auxAddr = reflect.ValueOf(aux).UnsafeAddr()
+		auxAddr = unsafe.Pointer(a.bh)
 	default:
 		if aux == nil {
 			break
@@ -291,7 +289,7 @@ func samFdOpen(fd uintptr, mode string, aux header) (sf *samFile, err error) {
 	fp, err := C.samdopen(
 		C.int(fd),
 		(*C.char)(unsafe.Pointer(m)),
-		unsafe.Pointer(auxAddr),
+		auxAddr,
 	)
 	sf = &samFile{fp: (*C.samfile_t)(unsafe.Pointer(fp))}
 	runtime.SetFinalizer(sf, (*samFile).samClose)

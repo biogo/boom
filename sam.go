@@ -31,7 +31,7 @@ var tWModes = [2]string{"w", "wh"}
 // The valid values of mode and ref are described in the overview and are
 // derived from the samtools documentation.
 func OpenSAMFile(f *os.File, mode string, ref *Header) (b *SAMFile, err error) {
-	sf, err := samFdOpen(f.Fd(), mode, ref)
+	sf, err := samFdOpen(f.Fd(), mode, ref.bamHeader)
 	if err != nil {
 		return
 	}
@@ -50,12 +50,12 @@ func OpenSAM(filename, ref string) (s *SAMFile, err error) {
 }
 
 // CreateBAM opens a file, filename for writing. ref is required to point to a valid Header.
-func CreateSAM(filename string, ref *Header) (s *SAMFile, err error) {
+func CreateSAM(filename string, ref *Header, dh bool) (s *SAMFile, err error) {
 	var mode string
-	if ref == nil {
-		mode = tWModes[0]
-	} else {
+	if dh {
 		mode = tWModes[1]
+	} else {
+		mode = tWModes[0]
 	}
 	sf, err := samOpen(filename, mode, ref.bamHeader)
 	if err != nil {
@@ -91,6 +91,11 @@ func (self *SAMFile) RefID(chr string) (id int, ok bool) {
 	ok = true
 
 	return
+}
+
+// Header returns a pointer to the BAM file's header.
+func (self *SAMFile) Header() *Header {
+	return &Header{self.header()}
 }
 
 // RefNames returns a slice of strings containing the names of reference sequences described

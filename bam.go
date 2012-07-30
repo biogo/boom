@@ -31,7 +31,7 @@ var bWModes = [2]string{"wb", "wbu"}
 // The valid values of mode and ref are described in the overview and are derived
 // from the samtools documentation.
 func OpenBAMFile(f *os.File, mode string, ref *Header) (b *BAMFile, err error) {
-	sf, err := samFdOpen(f.Fd(), mode, ref)
+	sf, err := samFdOpen(f.Fd(), mode, ref.bamHeader)
 	if err != nil {
 		return
 	}
@@ -91,6 +91,11 @@ func (self *BAMFile) RefID(chr string) (id int, ok bool) {
 	ok = true
 
 	return
+}
+
+// Header returns a pointer to the BAM file's header.
+func (self *BAMFile) Header() *Header {
+	return &Header{self.header()}
 }
 
 // RefNames returns a slice of strings containing the names of reference sequences described
