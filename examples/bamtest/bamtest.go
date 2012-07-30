@@ -3,6 +3,7 @@ package main
 import (
 	"code.google.com/p/biogo.boom"
 	"fmt"
+	"os"
 )
 
 var (
@@ -17,13 +18,30 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	so, err := boom.OpenSAMFile(os.Stderr, "wh", bf.Header())
+	if err != nil {
+		panic(err)
+	}
+	defer so.Close()
 	fmt.Printf("%s %d\n%s", bf.RefNames(), bf.RefLengths(), bf.Text())
 	for {
 		r, _, err := bf.Read()
 		if err != nil {
 			break
 		}
+
+		s := r.Seq()
+		for i := range s {
+			s[i] = 'S'
+		}
+		r.SetSeq(s)
+
 		fmt.Printf("%d %s %d-%d (%d) %v %d %d %s %v Fl:%v %q\n", r.RefID(), r.Name(), r.Start(), r.End(), r.Len(), r.Cigar(), r.Strand(), r.Score(), r.Seq(), r.Quality(), r.Flags(), r.Tags())
+		_, err = so.Write(r)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		}
+		fmt.Println()
 	}
 
 	fmt.Println("Fetch:", chr, start, end)
