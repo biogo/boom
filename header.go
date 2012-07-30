@@ -19,4 +19,3 @@ package boom
 type Header struct {
 	*bamHeader
 }
-
