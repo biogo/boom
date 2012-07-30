@@ -26,13 +26,14 @@ import (
 // A Record contains alignment data for one BAM alignment record.
 type Record struct {
 	*bamRecord
-	filled     bool
-	cigar      []CigarOp
-	nameStr    string
-	seqBytes   []byte
-	qualScores []int8
-	auxBytes   []byte
-	auxTags    []Aux
+	unmarshalled bool
+	marshalled   bool
+	cigar        []CigarOp
+	nameStr      string
+	seqBytes     []byte
+	qualScores   []int8
+	auxBytes     []byte
+	auxTags      []Aux
 }
 
 // RefID returns the target ID number for the alignment.
@@ -57,6 +58,18 @@ func (self *Record) Seq() []byte {
 func (self *Record) Quality() []int8 {
 	self.unmarshalData()
 	return self.qualScores
+}
+
+// SetSeq sets the sequence of the alignment query to the byte slice s.
+func (self *Record) SetSeq(s []byte) {
+	self.seqBytes = s
+	self.marshalled = false
+}
+
+// SetQuality sets the sequence of the alignment query to the int8 slice q.
+func (self *Record) SetQuality(q []int8) {
+	self.qualScores = q
+	self.marshalled = false
 }
 
 // Cigar returns a slice of CigarOps describing the alignment.
@@ -175,10 +188,56 @@ var (
 	}
 )
 
+// marshalData fills the bam1_t->data in the context of the bam1_t description fields to store the Record's fields.
+// 
+func (self *Record) marshalData() error {
+	if self.bamRecord.b == nil {
+		return valueIsNil
+	}
+
+	var d []byte
+
+	// Set query name.
+	self.setLQname(byte(len(self.nameStr)) + 1)
+	d = append(d, self.nameStr...)
+	d = append(d, 0)
+
+	// Set CIGAR data.
+	self.setNCigar(uint16(len(self.cigar)))
+	cb := &bytes.Buffer{}
+	err := binary.Write(cb, endian, self.cigar)
+	if err != nil {
+		panic(fmt.Sprintf("boom: binary.Write failed: %v", err))
+	}
+	d = append(d, cb.Bytes()...)
+
+	// Set sequence data.
+	self.setLQseq(int32(len(self.seqBytes)))
+	// Encode nucleotide nybbles.
+	sn := make([]byte, (len(self.seqBytes)+1)>>1)
+	for i, c := range self.seqBytes {
+		sn[i>>1] |= bamNT16Table[c] << (4 * uint(^i&1))
+	}
+	d = append(d, sn...)
+
+	// Set quality scores.
+	d = append(d, *(*[]byte)(unsafe.Pointer(&self.qualScores))...)
+
+	// Set auxilliary tags.
+	self.setLAux(int32(len(self.auxBytes)))
+	d = append(d, self.auxBytes...)
+
+	self.setDataUnsafe(d)
+
+	self.marshalled = true
+
+	return nil
+}
+
 // unmarshalData interogates the bam1_t->data in the context of the bam1_t description fields to fill the Record's fields.
 // unmarshalData is idempotent in this implementation although this may change.
 func (self *Record) unmarshalData() {
-	if self.filled || self.bamRecord.b == nil {
+	if self.unmarshalled || self.bamRecord.b == nil {
 		return
 	}
 
@@ -219,13 +278,13 @@ func (self *Record) unmarshalData() {
 	copy(self.qualScores, *(*[]int8)(unsafe.Pointer(&q)))
 
 	// Get auxilliary tags.
-	lAux := self.lAux()
+	lAux := int(self.lAux())
 	s, e = e, e+lAux
 	self.auxBytes = make([]byte, lAux)
 	copy(self.auxBytes, d[s:e])
 	self.auxTags = parseAux(self.auxBytes)
 
-	self.filled = true
+	self.unmarshalled = true
 }
 
 // A CigarOp represents a Compact Idiosyncratic Gapped Alignment Report operation.

@@ -72,12 +72,18 @@ func (self *SAMFile) Close() error {
 // Read reads a single SAM record and returns this or any error, and the number of bytes read.
 func (self *SAMFile) Read() (r *Record, n int, err error) {
 	n, br, err := self.samRead()
-	r = &Record{bamRecord: br}
+	r = &Record{bamRecord: br, marshalled: true}
 	return
 }
 
 // Write writes a BAM record, r, returning the number of bytes written and any error that occurred.
 func (self *SAMFile) Write(r *Record) (n int, err error) {
+	if r.marshalled == false {
+		err = r.marshalData()
+		if err != nil {
+			return
+		}
+	}
 	return self.samWrite(r.bamRecord)
 }
 

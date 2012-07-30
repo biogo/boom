@@ -87,94 +87,166 @@ func newBamRecord(b *C.bam1_t) (br *bamRecord, err error) {
 // All first check that the pointer to the bam1_t is not nil and convert to the appropriate
 // Go type.
 func (br *bamRecord) tid() int32 {
-	if br.b != nil {
-		return int32(br.b.core.tid)
+	if br.b == nil {
+		panic(valueIsNil)
 	}
-	panic(valueIsNil)
+	return int32(br.b.core.tid)
+}
+func (br *bamRecord) setTid(tid int32) {
+	if br.b == nil {
+		panic(valueIsNil)
+	}
+	br.b.core.tid = C.int32_t(tid)
 }
 func (br *bamRecord) pos() int32 {
-	if br.b != nil {
-		return int32(br.b.core.pos)
+	if br.b == nil {
+		panic(valueIsNil)
 	}
-	panic(valueIsNil)
+	return int32(br.b.core.pos)
 }
-func (br *bamRecord) bin() uint {
-	if br.b != nil {
-		return uint(br.b.core.bin)
+func (br *bamRecord) setPos(pos int32) {
+	if br.b == nil {
+		panic(valueIsNil)
 	}
-	panic(valueIsNil)
+	br.b.core.pos = C.int32_t(pos)
+}
+func (br *bamRecord) bin() uint16 {
+	if br.b == nil {
+		panic(valueIsNil)
+	}
+	return uint16(br.b.core.bin)
+}
+func (br *bamRecord) setBin(bin uint16) {
+	if br.b == nil {
+		panic(valueIsNil)
+	}
+	br.b.core.bin = uint16(bin)
 }
 func (br *bamRecord) qual() byte {
-	if br.b != nil {
-		return byte(br.b.core.qual)
+	if br.b == nil {
+		panic(valueIsNil)
 	}
-	panic(valueIsNil)
+	return byte(br.b.core.qual)
+}
+func (br *bamRecord) setQual(qual byte) {
+	if br.b == nil {
+		panic(valueIsNil)
+	}
+	br.b.core.qual = qual
 }
 func (br *bamRecord) lQname() byte {
-	if br.b != nil {
-		return byte(br.b.core.l_qname)
+	if br.b == nil {
+		panic(valueIsNil)
 	}
-	panic(valueIsNil)
+	return byte(br.b.core.l_qname)
+}
+func (br *bamRecord) setLQname(lQname byte) {
+	if br.b == nil {
+		panic(valueIsNil)
+	}
+	br.b.core.l_qname = lQname
 }
 func (br *bamRecord) flag() Flags {
-	if br.b != nil {
-		return Flags(br.b.core.flag)
+	if br.b == nil {
+		panic(valueIsNil)
 	}
-	panic(valueIsNil)
+	return Flags(br.b.core.flag)
 }
-func (br *bamRecord) nCigar() uint {
-	if br.b != nil {
-		return uint(br.b.core.n_cigar)
+func (br *bamRecord) setFlag(flags Flags) {
+	if br.b == nil {
+		panic(valueIsNil)
 	}
-	panic(valueIsNil)
+	br.b.core.flag = uint16(flags)
+}
+func (br *bamRecord) nCigar() uint16 {
+	if br.b == nil {
+		panic(valueIsNil)
+	}
+	return uint16(br.b.core.n_cigar)
+}
+func (br *bamRecord) setNCigar(nCigar uint16) {
+	if br.b == nil {
+		panic(valueIsNil)
+	}
+	br.b.core.n_cigar = nCigar
 }
 func (br *bamRecord) lQseq() int32 {
-	if br.b != nil {
-		return int32(br.b.core.l_qseq)
+	if br.b == nil {
+		panic(valueIsNil)
 	}
-	panic(valueIsNil)
+	return int32(br.b.core.l_qseq)
+}
+func (br *bamRecord) setLQseq(lQseq int32) {
+	if br.b == nil {
+		panic(valueIsNil)
+	}
+	br.b.core.l_qseq = C.int32_t(lQseq)
 }
 func (br *bamRecord) mtid() int32 {
-	if br.b != nil {
-		return int32(br.b.core.mtid)
+	if br.b == nil {
+		panic(valueIsNil)
 	}
-	panic(valueIsNil)
+	return int32(br.b.core.mtid)
+}
+func (br *bamRecord) setMtid() int32 {
+	if br.b == nil {
+		panic(valueIsNil)
+	}
+	return int32(br.b.core.mtid)
 }
 func (br *bamRecord) mpos() int32 {
-	if br.b != nil {
-		return int32(br.b.core.mpos)
+	if br.b == nil {
+		panic(valueIsNil)
 	}
-	panic(valueIsNil)
+	return int32(br.b.core.mpos)
+}
+func (br *bamRecord) setMpos(mpos int32) {
+	if br.b == nil {
+		panic(valueIsNil)
+	}
+	br.b.core.mpos = C.int32_t(mpos)
 }
 func (br *bamRecord) isize() int32 {
-	if br.b != nil {
-		return int32(br.b.core.isize)
+	if br.b == nil {
+		panic(valueIsNil)
 	}
-	panic(valueIsNil)
+	return int32(br.b.core.isize)
 }
-func (br *bamRecord) lAux() int {
-	if br.b != nil {
-		return int(br.b.l_aux)
+func (br *bamRecord) setIsize(isize int32) {
+	if br.b == nil {
+		panic(valueIsNil)
 	}
-	panic(valueIsNil)
+	br.b.core.isize = C.int32_t(isize)
+}
+func (br *bamRecord) lAux() int32 {
+	if br.b == nil {
+		panic(valueIsNil)
+	}
+	return int32(br.b.l_aux)
+}
+func (br *bamRecord) setLAux(lAux int32) {
+	if br.b == nil {
+		panic(valueIsNil)
+	}
+	br.b.l_aux = C.int(lAux)
 }
 func (br *bamRecord) dataLen() int {
-	if br.b != nil {
-		return int(br.b.data_len)
+	if br.b == nil {
+		panic(valueIsNil)
 	}
-	panic(valueIsNil)
+	return int(br.b.data_len)
 }
 func (br *bamRecord) dataCap() int {
-	if br.b != nil {
-		return int(br.b.m_data)
+	if br.b == nil {
+		panic(valueIsNil)
 	}
-	panic(valueIsNil)
+	return int(br.b.m_data)
 }
 func (br *bamRecord) dataPtr() uintptr {
-	if br.b != nil {
-		return uintptr(unsafe.Pointer(br.b.data))
+	if br.b == nil {
+		panic(valueIsNil)
 	}
-	panic(valueIsNil)
+	return uintptr(unsafe.Pointer(br.b.data))
 }
 func (br *bamRecord) dataUnsafe() []byte {
 	if br.b == nil {
@@ -189,6 +261,31 @@ func (br *bamRecord) dataUnsafe() []byte {
 	sliceHeader.Data = uintptr(unsafe.Pointer(br.b.data))
 
 	return data
+}
+func (br *bamRecord) setDataUnsafe(data []byte) {
+	if br.b == nil {
+		panic(valueIsNil)
+	}
+
+	l := len(data)
+	if br.dataCap() < len(data) {
+		if br.b.data == nil {
+			br.b.data = (*C.uint8_t)(unsafe.Pointer(C.malloc((C.size_t)(l))))
+		} else {
+
+			br.b.data = (*C.uint8_t)(unsafe.Pointer(C.realloc(unsafe.Pointer(br.b.data), (C.size_t)(l))))
+		}
+		if br.b.data == nil {
+			panic(couldNotAllocate)
+		}
+	}
+
+	var newData []byte
+	sliceHeader := (*reflect.SliceHeader)(unsafe.Pointer(&newData))
+	sliceHeader.Cap = l
+	sliceHeader.Len = l
+	sliceHeader.Data = uintptr(unsafe.Pointer(br.b.data))
+	copy(newData, data)
 }
 
 // bamRecordFree C.free()s the contained bam1_t and its data, first checking for nil pointers.
