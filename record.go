@@ -38,8 +38,7 @@ type Record struct {
 
 // NewRecord creates a new BAM record type, allocating the required C stuctures.
 func NewRecord() (r *Record, err error) {
-	var br *bamRecord
-	br, err = newBamRecord(nil)
+	br, err := newBamRecord(nil)
 	if err != nil {
 		return
 	}
