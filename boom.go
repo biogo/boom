@@ -77,6 +77,7 @@ func newBamRecord(b *C.bam1_t) (br *bamRecord, err error) {
 		}
 		*b = C.bam1_t{}
 	}
+
 	br = &bamRecord{b}
 	runtime.SetFinalizer(br, (*bamRecord).bamRecordFree)
 

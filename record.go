@@ -43,9 +43,6 @@ func NewRecord() (r *Record, err error) {
 	if err != nil {
 		return
 	}
-	br.b.m_data = 0
-	br.b.data_len = 0
-	br.b.data = nil
 	r = &Record{bamRecord: br}
 
 	return
