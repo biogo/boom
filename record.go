@@ -190,12 +190,14 @@ var (
 
 // marshalData fills the bam1_t->data in the context of the bam1_t description fields to store the Record's fields.
 // 
-func (self *Record) marshalData() error {
-	if self.bamRecord.b == nil {
-		return valueIsNil
-	}
-
-	var d []byte
+func (self *Record) marshalData() (d []byte) {
+	d = make([]byte, 0, 0+
+		len(self.nameStr)+1+ // qName
+		len(self.cigar)<<2+ // CIGAR
+		(len(self.seqBytes)+1)>>1+ // seq nybbles
+		len(self.seqBytes)+ // quality bytes
+		len(self.auxBytes), // aux bytes
+	)
 
 	// Set query name.
 	self.setLQname(byte(len(self.nameStr)) + 1)
@@ -204,12 +206,12 @@ func (self *Record) marshalData() error {
 
 	// Set CIGAR data.
 	self.setNCigar(uint16(len(self.cigar)))
-	cb := &bytes.Buffer{}
+	cb := bytes.NewBuffer(d)
 	err := binary.Write(cb, endian, self.cigar)
 	if err != nil {
 		panic(fmt.Sprintf("boom: binary.Write failed: %v", err))
 	}
-	d = append(d, cb.Bytes()...)
+	d = cb.Bytes()
 
 	// Set sequence data.
 	self.setLQseq(int32(len(self.seqBytes)))
@@ -227,11 +229,7 @@ func (self *Record) marshalData() error {
 	self.setLAux(int32(len(self.auxBytes)))
 	d = append(d, self.auxBytes...)
 
-	self.setDataUnsafe(d)
-
-	self.marshalled = true
-
-	return nil
+	return
 }
 
 // unmarshalData interogates the bam1_t->data in the context of the bam1_t description fields to fill the Record's fields.

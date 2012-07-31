@@ -79,10 +79,8 @@ func (self *BAMFile) Read() (r *Record, n int, err error) {
 // Write writes a BAM record, r, returning the number of bytes written and any error that occurred.
 func (self *BAMFile) Write(r *Record) (n int, err error) {
 	if r.marshalled == false {
-		err = r.marshalData()
-		if err != nil {
-			return
-		}
+		r.setDataUnsafe(r.marshalData())
+		r.marshalled = true
 	}
 	return self.samWrite(r.bamRecord)
 }
