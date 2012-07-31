@@ -36,6 +36,21 @@ type Record struct {
 	auxTags      []Aux
 }
 
+// NewRecord creates a new BAM record type, allocating the required C stuctures.
+func NewRecord() (r *Record, err error) {
+	var br *bamRecord
+	br, err = newBamRecord(nil)
+	if err != nil {
+		return
+	}
+	br.b.m_data = 0
+	br.b.data_len = 0
+	br.b.data = nil
+	r = &Record{bamRecord: br}
+
+	return
+}
+
 // RefID returns the target ID number for the alignment.
 func (self *Record) RefID() int {
 	self.unmarshalData()
