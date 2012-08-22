@@ -102,6 +102,11 @@ func (self *SAMFile) Header() *Header {
 	return &Header{self.header()}
 }
 
+// Targets returns the number of reference sequences described in the SAMFile's header.
+func (self *SAMFile) Targets() int {
+	return int(self.samFile.header().nTargets())
+}
+
 // RefNames returns a slice of strings containing the names of reference sequences described
 // in the SAM file's header.
 func (self *SAMFile) RefNames() []string {
