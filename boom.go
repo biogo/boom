@@ -415,6 +415,9 @@ func (sf *samFile) fileType() bamTypeFlags {
 
 // header returns the bamHeader wrapping the bam_header_t associated with sf.fp
 func (sf *samFile) header() *bamHeader {
+	if sf.fp == nil {
+		return nil
+	}
 	return &bamHeader{bh: sf.fp.header}
 }
 

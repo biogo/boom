@@ -104,24 +104,40 @@ func (self *BAMFile) Header() *Header {
 
 // Targets returns the number of reference sequences described in the SAMFile's header.
 func (self *BAMFile) Targets() int {
-	return int(self.samFile.header().nTargets())
+	h := self.header()
+	if h == nil {
+		return -1
+	}
+	return int(h.nTargets())
 }
 
 // RefNames returns a slice of strings containing the names of reference sequences described
 // in the BAM file's header.
 func (self *BAMFile) RefNames() []string {
-	return self.header().targetNames()
+	h := self.header()
+	if h == nil {
+		return nil
+	}
+	return h.targetNames()
 }
 
 // RefLengths returns a slice of integers containing the lengths of reference sequences described
 // in the BAM file's header.
 func (self *BAMFile) RefLengths() []uint32 {
-	return self.header().targetLengths()
+	h := self.header()
+	if h == nil {
+		return nil
+	}
+	return h.targetLengths()
 }
 
 // Text returns the unparsed text of the BAM header as a string.
 func (self *BAMFile) Text() string {
-	return self.header().text()
+	h := self.header()
+	if h == nil {
+		return ""
+	}
+	return h.text()
 }
 
 // A FetchFn is called on each Record found by Fetch.

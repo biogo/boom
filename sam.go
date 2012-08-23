@@ -104,22 +104,38 @@ func (self *SAMFile) Header() *Header {
 
 // Targets returns the number of reference sequences described in the SAMFile's header.
 func (self *SAMFile) Targets() int {
-	return int(self.samFile.header().nTargets())
+	h := self.header()
+	if h == nil {
+		return -1
+	}
+	return int(h.nTargets())
 }
 
 // RefNames returns a slice of strings containing the names of reference sequences described
 // in the SAM file's header.
 func (self *SAMFile) RefNames() []string {
-	return self.header().targetNames()
+	h := self.header()
+	if h == nil {
+		return nil
+	}
+	return h.targetNames()
 }
 
 // RefLengths returns a slice of integers containing the lengths of reference sequences described
 // in the SAM file's header.
 func (self *SAMFile) RefLengths() []uint32 {
-	return self.header().targetLengths()
+	h := self.header()
+	if h == nil {
+		return nil
+	}
+	return h.targetLengths()
 }
 
 // Text returns the unparsed text of the SAM header as a string.
 func (self *SAMFile) Text() string {
-	return self.header().text()
+	h := self.header()
+	if h == nil {
+		return ""
+	}
+	return h.text()
 }
