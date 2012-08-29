@@ -25,6 +25,11 @@ package boom
 #include "bam_endian.h"
 void bam_init_header_hash(bam_header_t *header);
 void bam_destroy_header_hash(bam_header_t *header);
+void setBin(bam1_t *b, uint16_t bin)        { b->core.bin = bin; }
+void setQual(bam1_t *b, uint8_t flag)       { b->core.flag = flag; }
+void setLQname(bam1_t *b, uint8_t l_qname)  { b->core.l_qname = l_qname; }
+void setFlag(bam1_t *b, uint16_t flag)      { b->core.flag = flag; }
+void setNCigar(bam1_t *b, uint16_t n_cigar) { b->core.n_cigar = n_cigar; }
 */
 import "C"
 
@@ -121,7 +126,7 @@ func (br *bamRecord) setBin(bin uint16) {
 	if br.b == nil {
 		panic(valueIsNil)
 	}
-	br.b.core.bin = uint16(bin)
+	C.setBin(br.b, C.uint16_t(bin))
 }
 func (br *bamRecord) qual() byte {
 	if br.b == nil {
@@ -133,7 +138,7 @@ func (br *bamRecord) setQual(qual byte) {
 	if br.b == nil {
 		panic(valueIsNil)
 	}
-	br.b.core.qual = qual
+	C.setQual(br.b, C.uint8_t(qual))
 }
 func (br *bamRecord) lQname() byte {
 	if br.b == nil {
@@ -145,7 +150,7 @@ func (br *bamRecord) setLQname(lQname byte) {
 	if br.b == nil {
 		panic(valueIsNil)
 	}
-	br.b.core.l_qname = lQname
+	C.setLQname(br.b, C.uint8_t(lQname))
 }
 func (br *bamRecord) flag() Flags {
 	if br.b == nil {
@@ -157,7 +162,7 @@ func (br *bamRecord) setFlag(flags Flags) {
 	if br.b == nil {
 		panic(valueIsNil)
 	}
-	br.b.core.flag = uint16(flags)
+	C.setFlag(br.b, C.uint16_t(flags))
 }
 func (br *bamRecord) nCigar() uint16 {
 	if br.b == nil {
@@ -169,7 +174,7 @@ func (br *bamRecord) setNCigar(nCigar uint16) {
 	if br.b == nil {
 		panic(valueIsNil)
 	}
-	br.b.core.n_cigar = nCigar
+	C.setNCigar(br.b, C.uint16_t(nCigar))
 }
 func (br *bamRecord) lQseq() int32 {
 	if br.b == nil {
