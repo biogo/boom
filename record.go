@@ -139,6 +139,11 @@ func (self *Record) Flags() Flags {
 	return self.flag()
 }
 
+// SetFlags sets the SAM flags for the alignment record.
+func (self *Record) SetFlags(fl Flags) {
+	self.setFlag(fl)
+}
+
 // Strand returns an int8 indicating the strand of the alignment. A positive return indicates
 // alignment in the forward orientation, a negative returns indicates alignemnt in the reverse
 // orientation.
