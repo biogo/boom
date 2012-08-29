@@ -544,15 +544,15 @@ func (sf *samFile) bamFetch(bi *bamIndex, tid, beg, end int, fn bamFetchFn) (ret
 		return 0, notBamFile
 	}
 
-	br, err := newBamRecord(nil)
-	if err != nil {
-		return
-	}
-	b := br.b
 	fp := *(*C.bamFile)(unsafe.Pointer(&sf.fp.x))
 	iter := C.bam_iter_query(bi.idx, C.int(tid), C.int(beg), C.int(end))
+	var br *bamRecord
 	for {
-		ret = int(C.bam_iter_read(fp, iter, b))
+		br, err = newBamRecord(nil)
+		if err != nil {
+			return
+		}
+		ret = int(C.bam_iter_read(fp, iter, br.b))
 		if ret < 0 {
 			break
 		}
