@@ -553,7 +553,6 @@ func (sf *samFile) bamFetch(bi *bamIndex, tid, beg, end int, fn bamFetchFn) (ret
 		}
 		fn(br)
 	}
-	br.bamRecordFree()
 	C.bam_iter_destroy(iter)
 
 	return
