@@ -140,15 +140,16 @@ func (self *BAMFile) Text() string {
 	return h.text()
 }
 
-// A FetchFn is called on each Record found by Fetch.
-type FetchFn func(*Record)
+// A FetchFn is called on each Record found by Fetch. Returning a true done value breaks from the
+// iterator.
+type FetchFn func(*Record) (done bool)
 
 // Fetch calls fn on all BAM records within the interval [beg, end) of the reference sequence
 // identified by chr. Note that beg >= 0 || beg = 0. The Record value passed by pointer to fn is reused
 // each iteration and is unusable after Fetch returns, so the values should not be stored.
 func (self *BAMFile) Fetch(i *Index, tid int, beg, end int, fn FetchFn) (ret int, err error) {
-	f := func(b *bamRecord) {
-		fn(&Record{bamRecord: b})
+	f := func(b *bamRecord) bool {
+		return fn(&Record{bamRecord: b})
 	}
 
 	return self.bamFetch(i.bamIndex, tid, beg, end, f)
