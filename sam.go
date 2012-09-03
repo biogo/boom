@@ -31,7 +31,11 @@ var tWModes = [2]string{"w", "wh"}
 // The valid values of mode and ref are described in the overview and are
 // derived from the samtools documentation.
 func OpenSAMFile(f *os.File, mode string, ref *Header) (b *SAMFile, err error) {
-	sf, err := samFdOpen(f.Fd(), mode, ref.bamHeader)
+	var h header
+	if ref != nil {
+		h = ref.bamHeader
+	}
+	sf, err := samFdOpen(f.Fd(), mode, h)
 	if err != nil {
 		return
 	}
@@ -56,6 +60,9 @@ func CreateSAM(filename string, ref *Header, dh bool) (s *SAMFile, err error) {
 		mode = tWModes[1]
 	} else {
 		mode = tWModes[0]
+	}
+	if ref == nil {
+		return nil, noHeader
 	}
 	sf, err := samOpen(filename, mode, ref.bamHeader)
 	if err != nil {

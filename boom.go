@@ -35,6 +35,7 @@ import "C"
 
 import (
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 	"reflect"
@@ -52,6 +53,10 @@ var (
 		binary.LittleEndian,
 		binary.BigEndian,
 	}[C.bam_is_big_endian()]
+)
+
+var (
+	noHeader = errors.New("boom: no header")
 )
 
 // Verbosity sets and returns the level of debugging information emitted on stderr by libbam.

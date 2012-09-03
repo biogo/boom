@@ -31,7 +31,11 @@ var bWModes = [2]string{"wb", "wbu"}
 // The valid values of mode and ref are described in the overview and are derived
 // from the samtools documentation.
 func OpenBAMFile(f *os.File, mode string, ref *Header) (b *BAMFile, err error) {
-	sf, err := samFdOpen(f.Fd(), mode, ref.bamHeader)
+	var h header
+	if ref != nil {
+		h = ref.bamHeader
+	}
+	sf, err := samFdOpen(f.Fd(), mode, h)
 	if err != nil {
 		return
 	}
@@ -56,6 +60,9 @@ func CreateBAM(filename string, ref *Header, comp bool) (b *BAMFile, err error) 
 		mode = bWModes[0]
 	} else {
 		mode = bWModes[1]
+	}
+	if ref == nil {
+		return nil, noHeader
 	}
 	sf, err := samOpen(filename, mode, ref.bamHeader)
 	if err != nil {
