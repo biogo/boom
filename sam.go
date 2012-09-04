@@ -73,6 +73,9 @@ func CreateSAM(filename string, ref *Header, dh bool) (s *SAMFile, err error) {
 
 // Close closes the SAMFile, freeing any associated data.
 func (self *SAMFile) Close() error {
+	if self == nil {
+		return nil
+	}
 	return self.samClose()
 }
 

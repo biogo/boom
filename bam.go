@@ -73,6 +73,9 @@ func CreateBAM(filename string, ref *Header, comp bool) (b *BAMFile, err error) 
 
 // Close closes the BAMFile, freeing any associated data.
 func (self *BAMFile) Close() error {
+	if self == nil {
+		return nil
+	}
 	return self.samClose()
 }
 

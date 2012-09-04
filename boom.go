@@ -438,7 +438,7 @@ func (sf *samFile) samClose() error {
 	}
 	runtime.SetFinalizer(sf, nil)
 
-	if h := sf.header(); h.bh.hash != nil {
+	if h := sf.header(); h != nil && h.bh != nil && h.bh.hash != nil {
 		C.bam_destroy_header_hash(
 			(*C.bam_header_t)(unsafe.Pointer(h.bh)),
 		)
