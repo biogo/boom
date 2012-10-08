@@ -31,7 +31,7 @@ type Record struct {
 	cigar        []CigarOp
 	nameStr      string
 	seqBytes     []byte
-	qualScores   []int8
+	qualScores   []byte
 	auxBytes     []byte
 	auxTags      []Aux
 }
@@ -65,8 +65,8 @@ func (self *Record) Seq() []byte {
 	return self.seqBytes
 }
 
-// Quality returns an int8 slice containing the Phred quality scores of the alignment query.
-func (self *Record) Quality() []int8 {
+// Quality returns a byte slice containing the Phred quality scores of the alignment query.
+func (self *Record) Quality() []byte {
 	self.unmarshalData()
 	return self.qualScores
 }
@@ -77,8 +77,8 @@ func (self *Record) SetSeq(s []byte) {
 	self.marshalled = false
 }
 
-// SetQuality sets the sequence of the alignment query to the int8 slice q.
-func (self *Record) SetQuality(q []int8) {
+// SetQuality sets the sequence of the alignment query to the byte slice q.
+func (self *Record) SetQuality(q []byte) {
 	self.qualScores = q
 	self.marshalled = false
 }
@@ -287,9 +287,9 @@ func (self *Record) unmarshalData() {
 	}
 	// Get quality scores.
 	s, e = e, e+lQqual
-	self.qualScores = make([]int8, lQqual)
+	self.qualScores = make([]byte, lQqual)
 	q := d[s:e]
-	copy(self.qualScores, *(*[]int8)(unsafe.Pointer(&q)))
+	copy(self.qualScores, *(*[]byte)(unsafe.Pointer(&q)))
 
 	// Get auxilliary tags.
 	lAux := int(self.lAux())
