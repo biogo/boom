@@ -194,7 +194,7 @@ var (
 )
 
 // marshalData fills the bam1_t->data in the context of the bam1_t description fields to store the Record's fields.
-// 
+//
 func (self *Record) marshalData() (d []byte) {
 	d = make([]byte, 0, 0+
 		len(self.nameStr)+1+ // qName
@@ -431,7 +431,7 @@ func (self Aux) Value() (v interface{}) {
 	case 'c':
 		return int8(self[3])
 	case 'C':
-		return uint(self[3])
+		return uint8(self[3])
 	case 's':
 		s := int16(0)
 		err := binary.Read(bytes.NewBuffer([]byte(self[4:6])), endian, &s)
