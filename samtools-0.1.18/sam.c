@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <string.h>
 #include <unistd.h>
 #include "faidx.h"
@@ -48,6 +49,7 @@ samfile_t *samopen(const char *fn, const char *mode, const void *aux)
 			return samdopen(STDOUT_FILENO, mode, aux);
 		f = fopen(fn, "w");
 	} else return 0;
+	if (errno) return 0;
 	int fd = dup(fileno(f));
 	fclose(f);
 	return samdopen(fd, mode, aux);
