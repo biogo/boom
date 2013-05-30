@@ -8,7 +8,7 @@
 #include "sam_header.h"
 
 int bam_is_be = 0, bam_verbose = 2;
-char *bam_flag2char_table = "pPuUrR12sfd\0\0\0\0\0";
+char *bam_flag2char_table = "pPuUrR12sfdS\0\0\0\0";
 
 /**************************
  * CIGAR related routines *
@@ -171,7 +171,7 @@ static void swap_endian_data(const bam1_core_t *c, int data_len, uint8_t *data)
 				for (i = 0; i < n; i += 4)
 					bam_swap_endian_4p(s + 5 + i);
 			}
-			bam_swap_endian_4p(s+1); 
+			bam_swap_endian_4p(s+1);
 		}
 	}
 }

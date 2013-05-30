@@ -687,31 +687,33 @@ type textHeader []byte
 func (th textHeader) header() {}
 
 const (
-	Paired       Flags = paired       // The read is paired in sequencing, no matter whether it is mapped in a pair.
-	ProperPair   Flags = properPair   // The read is mapped in a proper pair.
-	Unmapped     Flags = unmapped     // The read itself is unmapped; conflictive with BAM_FPROPER_PAIR.
-	MateUnmapped Flags = mateUnmapped // The mate is unmapped.
-	Reverse      Flags = reverse      // The read is mapped to the reverse strand.
-	MateReverse  Flags = mateReverse  // The mate is mapped to the reverse strand.
-	Read1        Flags = read1        // This is read1.
-	Read2        Flags = read2        // This is read2.
-	Secondary    Flags = secondary    // Not primary alignment.
-	QCFail       Flags = qCFail       // QC failure.
-	Duplicate    Flags = duplicate    // Optical or PCR duplicate.
+	Paired        Flags = paired        // The read is paired in sequencing, no matter whether it is mapped in a pair.
+	ProperPair    Flags = properPair    // The read is mapped in a proper pair.
+	Unmapped      Flags = unmapped      // The read itself is unmapped; conflictive with BAM_FPROPER_PAIR.
+	MateUnmapped  Flags = mateUnmapped  // The mate is unmapped.
+	Reverse       Flags = reverse       // The read is mapped to the reverse strand.
+	MateReverse   Flags = mateReverse   // The mate is mapped to the reverse strand.
+	Read1         Flags = read1         // This is read1.
+	Read2         Flags = read2         // This is read2.
+	Secondary     Flags = secondary     // Not primary alignment.
+	QCFail        Flags = qCFail        // QC failure.
+	Duplicate     Flags = duplicate     // Optical or PCR duplicate.
+	Supplementary Flags = supplementary // Supplementary alignment, indicates alignment is part of a chimeric alignment.
 )
 
 const (
-	paired       = C.BAM_FPAIRED
-	properPair   = C.BAM_FPROPER_PAIR
-	unmapped     = C.BAM_FUNMAP
-	mateUnmapped = C.BAM_FMUNMAP
-	reverse      = C.BAM_FREVERSE
-	mateReverse  = C.BAM_FMREVERSE
-	read1        = C.BAM_FREAD1
-	read2        = C.BAM_FREAD2
-	secondary    = C.BAM_FSECONDARY
-	qCFail       = C.BAM_FQCFAIL
-	duplicate    = C.BAM_FDUP
+	paired        = C.BAM_FPAIRED
+	properPair    = C.BAM_FPROPER_PAIR
+	unmapped      = C.BAM_FUNMAP
+	mateUnmapped  = C.BAM_FMUNMAP
+	reverse       = C.BAM_FREVERSE
+	mateReverse   = C.BAM_FMREVERSE
+	read1         = C.BAM_FREAD1
+	read2         = C.BAM_FREAD2
+	secondary     = C.BAM_FSECONDARY
+	qCFail        = C.BAM_FQCFAIL
+	duplicate     = C.BAM_FDUP
+	supplementary = C.BAM_FSUPP
 )
 
 // A Flags represents a BAM record's alignment FLAG field.
@@ -729,6 +731,7 @@ type Flags uint32
 //  0x100 - s - Secondary
 //  0x200 - f - QCFail
 //  0x400 - d - Duplicate
+//  0x800 - S - Supplementary
 //
 // Note that flag bits are represented high order to the right.
 func (f Flags) String() string {
@@ -738,7 +741,7 @@ func (f Flags) String() string {
 		f &^= pairedMask
 	}
 
-	const flags = "pPuUrR12sfd"
+	const flags = "pPuUrR12sfdS"
 
 	b := make([]byte, len(flags))
 	for i, c := range flags {

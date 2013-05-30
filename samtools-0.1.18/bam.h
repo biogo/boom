@@ -115,6 +115,8 @@ typedef struct {
 #define BAM_FQCFAIL      512
 /*! @abstract optical or PCR duplicate */
 #define BAM_FDUP        1024
+/*! @abstract supplemental alignment */
+#define BAM_FSUPP       2048
 
 #define BAM_OFDEC          0
 #define BAM_OFHEX          1
@@ -186,7 +188,7 @@ typedef struct {
   @field  data       all variable-length data, concatenated; structure: cigar-qname-seq-qual-aux
 
   @discussion Notes:
- 
+
    1. qname is zero tailing and core.l_qname includes the tailing '\0'.
    2. l_qseq is calculated from the total length of an alignment block
       on reading or from CIGAR.
@@ -681,7 +683,7 @@ extern "C" {
 	 * Miscellaneous *
 	 *****************/
 
-	/*!  
+	/*!
 	  @abstract Calculate the rightmost coordinate of an alignment on the
 	  reference genome.
 
