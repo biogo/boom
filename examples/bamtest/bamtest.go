@@ -1,7 +1,7 @@
 package main
 
 import (
-	"code.google.com/p/biogo.boom"
+	"github.com/biogo/boom"
 	"fmt"
 	"os"
 )
